@@ -1,0 +1,26 @@
+apiVersion: helm.fluxcd.io/v1
+kind: HelmRelease
+metadata:
+  name: carrierk-tessera-job
+  namespace: carrierk-quo
+  annotations:
+    flux.weave.works/automated: "false"
+spec:
+  releaseName: carrierk-tessera-job
+  chart:
+    path: platforms/quorum/charts/tessera_key_mgmt
+    git: https://github.com/kaverikhaneja/blockchain-automation-framework.git
+    ref: quo-raft-test
+  values:
+    metadata:
+      name: carrierk-tessera-job
+      namespace: carrierk-quo    
+    image:      
+      repository: quorumengineering/tessera:21.4.0
+      pullSecret: regcred
+    vault:
+      address: http://vault.internal.dev2.aws.blockchaincloudpoc-develop.com:20001
+      authpath: quorumcarrierk
+      role: vault-role
+      serviceaccountname: vault-auth
+      tmprefix: secret/carrierk-quo/crypto/carrierk/transaction
