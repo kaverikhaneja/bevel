@@ -30,7 +30,7 @@
 
 # Gets the existing ambassador tls certs
 
-- name: Get tls certs data from Vault
+- name: Get ambassador and tls certs from Vault
   shell: |
     vault kv get -format=yaml {{ component_name }}/tlscerts
   environment:
