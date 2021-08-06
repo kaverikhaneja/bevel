@@ -268,7 +268,7 @@ spec:
              LOOKUP_SECRET_RESPONSE=$(curl -sS --header "X-Vault-Token: ${VAULT_TOKEN}" ${VAULT_ADDR}/v1/${USER_SECRET_PREFIX} | jq -r 'if .errors then . else . end')
              validateVaultResponse "${USER_SECRET_PREFIX}" "${LOOKUP_SECRET_RESPONSE}" "LOOKUPSECRETRESPONSE"
              
-             USER_PASSWORD=$(echo ${LOOKUP_SECRET_RESPONSE} | jq -r '.data["{{ .Values.image.authusername }}"]')
+             USER_PASSWORD=$(echo ${LOOKUP_SECRET_RESPONSE} | jq -r '.data.data["{{ .Values.image.authusername }}"]')
              echo "${USER_PASSWORD}" >> ${MOUNT_PATH}/user_cred
              
         volumeMounts:
