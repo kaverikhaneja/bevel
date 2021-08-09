@@ -26,7 +26,7 @@ This tasks downloads the certificates from NMS.
 ##### Input Variables
 
     url: path to nms truststore
-    dest: path to metwork-map-truststore.jks
+    dest: path to network-map-truststore.jks
     validate_certs: whether to validate the jks file or not.
 
 **when**:  It runs when *truststore_result.failed* == True, i.e. truststore is present . 
