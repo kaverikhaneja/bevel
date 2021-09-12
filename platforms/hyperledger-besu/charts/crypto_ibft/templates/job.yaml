@@ -181,6 +181,7 @@ spec:
             
             #create file to store addresses of validator nodes
             touch ${BUILD_PATH}/validatorinfo
+            ls -l ${BUILD_PATH}/
             
             for i in "${!node[@]}";
             do
@@ -199,9 +200,11 @@ spec:
 
             #this file is used by besu binary to generate the extra data information
             touch ${BUILD_PATH}/toEncode.json
+            ls -l ${BUILD_PATH}/
 
             #new genesis file with extradata information
             touch ${BUILD_PATH}/crypto/newGenesis.json
+            ls -l ${BUILD_PATH}/
 
             #create the rlp encoded string and add it to extraData field in newGenesis.json
             cat ${BUILD_PATH}/validatorinfo | paste -sd "," -| awk '{print "["$0"]"}'> ${BUILD_PATH}/toEncode.json
@@ -211,8 +214,6 @@ spec:
             #delete the keys directory
             rm -r ${BUILD_PATH}/crypto/keys
 
-            # #write the genesis base64 data to the file
-            # cp ${GENESIS} ${GENESIS_LOCAL}
             exit 0
         - name: store-crypto
           image: {{ .Values.image.initContainerImage }}
