@@ -116,10 +116,14 @@ spec:
               value: {{ .Values.node.org }}
             - name: NODE_TYPE
               value: {{ .Values.node.type }}
+            - name: ADD_NEW_ORG
+              value: {{ .Value.checks.add_new_org }}
           command: ["/bin/bash", "-c"]
           args:
           - |-
             ls -l /opt/
+            apt install curl
+            curl --version
             curl -L -o /opt/orion/bin/jq https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64
             chmod +x /opt/orion/bin/jq
             
@@ -205,11 +209,15 @@ spec:
               #generate the node address for each peer
               data_path=${BUILD_PATH}/crypto/${nodeOrg[i]}/${node[i]}/data
               export_address=${BUILD_PATH}/crypto/${nodeOrg[i]}/${node[i]}/data/nodeAddress
-              /opt/besu/bin/besu --data-path ${data_path} public-key export-address --to ${export_address}
+              # /opt/besu/bin/besu --data-path ${data_path} public-key export-address --to ${export_address}
+              ls -l ${data_path}/
               
-              #generate the node public key for each peer of new organization
-              export_key_path=${BUILD_PATH}/crypto/${nodeOrg[i]}/${node[i]}/data/key.pub
-              /opt/besu/bin/besu --data-path ${data_path} public-key export --to ${export_key_path}
+              if [$ADD_NEW_ORG]; then
+                #generate the node public key for each peer of new organization
+                export_key_path=${BUILD_PATH}/crypto/${nodeOrg[i]}/${node[i]}/data/key.pub
+                /opt/besu/bin/besu --data-path ${data_path} public-key export --to ${export_key_path}
+              fi
+
 
               #create the validator address array
               echo "\"$(cat ${export_address})\"" >> ${BUILD_PATH}/validatorinfo
