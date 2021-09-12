@@ -137,13 +137,13 @@ spec:
             ls -l
 
             #Get information about each validator node present in network.yaml and store it in an array
-            # declare -a node
-            # declare -a nodeOrg
-            # declare -a nodeType
+            declare -a node
+            declare -a nodeOrg
+            declare -a nodeType
 
-            node=${NODE_NAME}
-            nodeOrg=${NODE_ORG}
-            nodeType=${NODE_TYPE}
+            node+=(${NODE_NAME})
+            nodeOrg+=(${NODE_ORG})
+            nodeType+=(${NODE_TYPE})
 
             echo "node names: ${node[@]}"
             echo "node organizations: ${nodeOrg[@]}"
