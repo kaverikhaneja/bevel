@@ -1,0 +1,289 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Values.metadata.name }}
+  namespace: {{ .Values.metadata.namespace }}
+  labels:
+    app: {{ .Values.metadata.name }}
+    app.kubernetes.io/name: {{ .Values.metadata.name }}
+    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}		
+    app.kubernetes.io/managed-by: {{ .Release.Service }}			
+    app.kubernetes.io/instance: {{ .Release.Name }}			
+spec:
+    backoffLimit: 6
+    template:
+      metadata:
+        labels:
+          app: {{ .Values.metadata.name }}
+          app.kubernetes.io/name: {{ .Values.metadata.name }}
+          helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+          app.kubernetes.io/managed-by: {{ .Release.Service }}
+          app.kubernetes.io/instance: {{ .Release.Name }}
+      spec:
+        restartPolicy: "OnFailure"
+        serviceAccountName: {{ .Values.vault.serviceaccountname }}
+        volumes:
+          - name: cryptocheck
+            emptyDir:
+              medium: Memory
+          - name: genesis-raw-config
+            configMap:
+              name: genesis-{{ .Values.configMap.name }}
+              items:
+                - key: ibftConfigFile.json
+                  path: ibftConfigFile.json
+        initContainers:
+        - name: init-check-crypto
+          image: {{ .Values.image.initContainerImage }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          volumeMounts:
+          - mountPath: /cryptocheck
+            name: cryptocheck
+          env:
+            - name: VAULT_ADDR
+              value: {{ .Values.vault.address }}
+            - name: VAULT_APP_ROLE
+              value: {{ .Values.vault.role }}
+            - name: KUBERNETES_AUTH_PATH
+              value: {{ .Values.vault.authpath }}
+            - name: VAULT_SECRET_PREFIX
+              value: {{ .Values.vault.ibftprefix }}
+            - name: MOUNT_PATH
+              value: "/cryptocheck"
+            - name: ITEM_NAME
+              value: {{ .Values.metadata.item.name}}
+          command: ["sh", "-c"]
+          args:
+          - |-
+             #!/usr/bin/env sh
+             
+              validateVaultResponse () {
+                if echo ${2} | grep "errors"; then
+                  echo "ERROR: unable to retrieve ${1}: ${2}"
+                  exit 1
+                fi
+                if  [ "$3" == "LOOKUPSECRETRESPONSE" ]
+                then
+                  http_code=$(curl -sS -o /dev/null -w "%{http_code}" \
+                  --header "X-Vault-Token: ${VAULT_TOKEN}" \
+                  ${VAULT_ADDR}/v1/${1})
+                  curl_response=$?
+                  if test "$http_code" != "200" ; then
+                    echo "Http response code from Vault - $http_code and curl_response - $curl_response"
+                    if test "$curl_response" != "0"; then
+                      echo "Error: curl command failed with error code - $curl_response"
+                      exit 1
+                    fi
+                  fi
+                fi
+              }
+
+              # Setting up the environment to check and get secrets from Vault
+              echo "Getting secrets from Vault server: ${VAULT_ADDR}"
+              KUBE_SA_TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
+              VAULT_TOKEN=$(curl -sS --request POST ${VAULT_ADDR}/v1/auth/${KUBERNETES_AUTH_PATH}/login -H "Content-Type: application/json" -d '{"role":"'"${VAULT_APP_ROLE}"'","jwt":"'"${KUBE_SA_TOKEN}"'"}' | jq -r 'if .errors then . else .auth.client_token end')
+              validateVaultResponse 'vault login token' "${VAULT_TOKEN}"
+              echo "Logged into Vault"
+              
+              mkdir -p ${MOUNT_PATH}
+
+              LOOKUP_SECRET_RESPONSE=$(curl -sS -H "X-Vault-Token: ${VAULT_TOKEN}" ${VAULT_ADDR}/v1/${VAULT_SECRET_PREFIX}/${ITEM_NAME}/data | jq -r 'if .errors then . else . end')
+              if echo ${LOOKUP_SECRET_RESPONSE} | grep "errors"
+              then
+                echo "Crypto absent in vault. Ignore error warning"
+                touch ${MOUNT_PATH}/absent.txt
+              else
+                validateVaultResponse "${VAULT_SECRET_PREFIX}" "${LOOKUP_SECRET_RESPONSE}" "LOOKUPSECRETRESPONSE"
+                echo "Crypto present in vault."
+                VAULT_RESULT=$(echo ${LOOKUP_SECRET_RESPONSE})
+                touch ${MOUNT_PATH}/present.txt
+              fi
+              echo "Done checking for secrets in vault"
+        containers:
+        - name: crypto-ibft
+          image: {{ .Values.image.repository }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          volumeMounts:
+          - mountPath: /cryptocheck
+            name: cryptocheck 
+          - mountPath: /genesis-raw-config                             
+            name: genesis-raw-config
+          command: ["/bin/bash", "-c"]
+          args:
+          - |-
+            curl -L -o /opt/orion/bin/jq https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64
+            chmod +x /opt/orion/bin/jq
+            
+            if [ -e /cryptocheck/present.txt ]
+            then
+              echo "Crypto Material already present in the vault."
+              # exit 0
+            fi
+
+            BUILD_PATH="build"
+            GENESIS="${BUILD_PATH}/crypto/newGenesis.json"
+
+            mkdir -p ${BUILD_PATH}
+            #mkdir -p ${BUILD_PATH}/crypto
+            
+            ls -l
+
+            #Get information about each validator node present in network.yaml and store it in an array
+            declare -a node
+            declare -a nodeOrg
+            declare -a nodeType
+            
+            for data in "${org[@]}";
+            do
+              nodeOrg+=(${data[name]})
+              nodeType+=(${data[type]})
+              if [${data.services.validators}]
+              then
+                node+=(${data.services.validators.validator.name})
+                echo "node_name = ${node[@]}"
+              else
+                node+=(${data.services.peers.peer.name})
+                echo "node_name = ${node[@]}"
+              fi
+            done
+            
+            #generate crypto for IBFT consensus
+            /opt/besu/bin/besu operator generate-blockchain-config  --config-file=/genesis-raw-config/ibftConfigFile.json --to=${BUILD_PATH}/crypto  --private-key-file-name=key
+            ls -l ${BUILD_PATH}/
+            #get the list of folders created by besu in crypto directory
+            #find ${BUILD_PATH}/crypto/keys -maxdepth 1 -mindepth 1 -type d
+            #ls -l ${BUILD_PATH}/crypto/keys/
+
+            declare -a FILE_PATH
+            declare -a DEST
+
+            for folder in $(find ${BUILD_PATH}/crypto/keys -maxdepth 1 -mindepth 1 -type d);
+            do
+              echo "Folders: ${folder}"
+              FILE_PATH+=(${folder})
+            done
+
+            for i in "${!node[@]}";
+            do
+              #echo "Node Paths: ${BUILD_PATH}/crypto/${nodeOrg[i]}/${node[i]}/data"
+              DEST+=(${BUILD_PATH}/crypto/${nodeOrg[i]}/${node[i]}/data)
+            done
+    
+            #rename the directories
+            for i in "${!FILE_PATH[@]}";
+            do
+              mv ${FILE_PATH[i]} ${DEST[i]}
+            done
+
+            echo "File paths: ${FILE_PATH[@]}"
+            echo "Destination: ${DEST[@]}"
+            
+            #create file to store addresses of validator nodes
+            touch ${BUILD_PATH}/validatorinfo
+            
+            for i in "${!node[@]}";
+            do
+              #generate the node address for each peer
+              data_path=${BUILD_PATH}/crypto/${nodeOrg[i]}/${node[i]}/data
+              export_address=${BUILD_PATH}/crypto/${nodeOrg[i]}/${node[i]}/data/nodeAddress
+              /opt/besu/bin/besu --data-path ${data_path} public-key export-address --to ${export_address}
+              
+              #generate the node public key for each peer of new organization
+              export_key_path=${BUILD_PATH}/crypto/${nodeOrg[i]}/${node[i]}/data/key.pub
+              /opt/besu/bin/besu --data-path ${data_path} public-key export --to ${export_key_path}
+
+              #create the validator address array
+              echo "\"$(cat ${export_address})\"" >> ${BUILD_PATH}/validatorinfo
+            done
+
+            #this file is used by besu binary to generate the extra data information
+            touch ${BUILD_PATH}/toEncode.json
+
+            #new genesis file with extradata information
+            touch ${BUILD_PATH}/crypto/newGenesis.json
+
+            #create the rlp encoded string and add it to extraData field in newGenesis.json
+            cat ${BUILD_PATH}/validatorinfo | paste -sd "," -| awk '{print "["$0"]"}'> ${BUILD_PATH}/toEncode.json
+            echo "$(/opt/besu/bin/besu rlp encode --from=${BUILD_PATH}/toEncode.json )" > ${BUILD_PATH}/extraData
+            jq '.extraData = $newVal' --arg newVal $(cat ${BUILD_PATH}/extraData) << cat ${BUILD_PATH}/crypto/genesis.json > ${BUILD_PATH}/crypto/newGenesis.json
+
+            #delete the keys directory
+            rm -r ${BUILD_PATH}/crypto/keys
+
+            # #write the genesis base64 data to the file
+            # cp ${GENESIS} ${GENESIS_LOCAL}
+            exit 0
+        - name: store-crypto
+          image: {{ .Values.image.initContainerImage }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: COMPONENT_NAME
+              value: {{ .Values.metadata.name }}
+            - name: VAULT_SECRET_PREFIX
+              value: {{ .Values.vault.ibftprefix }}
+            - name: VAULT_ADDR
+              value: {{ .Values.vault.address }}
+            - name: KUBERNETES_AUTH_PATH
+              value: {{ .Values.vault.authpath }}
+            - name: VAULT_APP_ROLE
+              value: {{ .Values.vault.role }}
+            - name: PEER_NAME
+              value: {{ .Values.metadata.peer.name}}
+          command: ["sh", "-c"]
+          args:
+          - |-
+            #!/usr/bin/env sh
+
+            validateVaultResponse () {
+                if echo ${2} | grep "errors"; then
+                  echo "ERROR: unable to retrieve ${1}: ${2}"
+                  exit 1
+                fi
+                if  [ "$3" == "LOOKUPSECRETRESPONSE" ]
+                then
+                  http_code=$(curl -sS -o /dev/null -w "%{http_code}" \
+                  --header "X-Vault-Token: ${VAULT_TOKEN}" \
+                  ${VAULT_ADDR}/v1/${1})
+                  curl_response=$?
+                  if test "$http_code" != "200" ; then
+                    echo "Http response code from Vault - $http_code and curl_response - $curl_response"
+                    if test "$curl_response" != "0"; then
+                      echo "Error: curl command failed with error code - $curl_response"
+                      exit 1
+                    fi
+                  fi
+                fi
+              }
+
+            # setting up env to login vault
+            KUBE_SA_TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
+            VAULT_TOKEN=$(curl -sS --request POST ${VAULT_ADDR}/v1/auth/${KUBERNETES_AUTH_PATH}/login -H "Content-Type: application/json" -d '{"role":"'"${VAULT_APP_ROLE}"'","jwt":"'"${KUBE_SA_TOKEN}"'"}' | jq -r 'if .errors then . else .auth.client_token end')
+            validateVaultResponse 'vault login token' "${VAULT_TOKEN}"
+              echo "Logged into Vault"
+
+            # Copy the crypto material to the Vault
+            LOOKUP_SECRET_RESPONSE=$(curl -sS -H "X-Vault-Token: ${VAULT_TOKEN}" \
+             -H "Content-Type: application/json" \
+             -X POST \
+             -d '{"key":"$(cat${BUILD_PATH}/crypto/${COMPONENT_NAME}/${PEER_NAME}/data/key)"}' ${VAULT_ADDR}/v1/${VAULT_SECRET_PREFIX}/${PEER_NAME}/data | jq -r 'if .errors then . else .auth.client_token end')
+          
+            # Copy the crypto material to the Vault
+            LOOKUP_SECRET_RESPONSE=$(curl -sS -H "X-Vault-Token: ${VAULT_TOKEN}" \
+             -H "Content-Type: application/json" \
+             -X POST \
+             -d '{"key_pub":"$(cat${BUILD_PATH}/crypto/${COMPONENT_NAME}/${PEER_NAME}/data/key.pub)"}' ${VAULT_ADDR}/v1/${VAULT_SECRET_PREFIX}/${PEER_NAME}/data | jq -r 'if .errors then . else .auth.client_token end')
+
+            # Copy the crypto material to the Vault
+            LOOKUP_SECRET_RESPONSE=$(curl -sS -H "X-Vault-Token: ${VAULT_TOKEN}" \
+             -H "Content-Type: application/json" \
+             -X POST \
+             -d '{"nodeAddress":"$(cat${BUILD_PATH}/crypto/${COMPONENT_NAME}/${PEER_NAME}/data/nodeAddress)"}' ${VAULT_ADDR}/v1/${VAULT_SECRET_PREFIX}/${PEER_NAME}/data | jq -r 'if .errors then . else .auth.client_token end')
+
+            # Copy genesis to vault
+            LOOKUP_SECRET_RESPONSE=$(curl -sS -H "X-Vault-Token: ${VAULT_TOKEN}" \
+             -H "Content-Type: application/json" \
+             -X POST \
+             -d '{"genesis":"${GENESIS}}' ${VAULT_ADDR}/v1/${VAULT_SECRET_PREFIX}/genesis | jq -r 'if .errors then . else .auth.client_token end')
+        
+       

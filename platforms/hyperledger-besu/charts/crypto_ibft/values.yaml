@@ -1,0 +1,49 @@
+# Default values for ibft crypto.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+metadata:
+ #Provide the name for indy-key-mgmt release
+  #Eg. name: indy-key-mgmt
+  name:
+  #Provide the namespace for organization's peer
+  #Eg. namespace: supplychain-bes
+  namespace:
+  item:
+    name:
+  peer:
+    name:
+
+image:
+  #Provide the image repository for the indy-key-mgmt container
+  #Eg. repository: indy-key-mgmt:latest
+  repository:
+  initContainerImage:
+  pullPolicy:
+
+configMap:
+  name:
+  total_peer_count:
+
+vault:
+  #Provide the vault server address
+  #Eg. address: http://54.226.163.39:8200
+  address:
+
+  #Provide the key path for vault
+  #Eg. authpath: provider.stewards
+  authpath:
+
+  #Provide the identity for vault
+  #Eg. role: my-identity
+  role:
+
+  # Provide the service account name autheticated to vault.
+  # NOTE: Make sure that the service account is already created and autheticated to use the vault.
+  # Eg. serviceAccountName: vault-auth
+  serviceaccountname: 
+
+  # Provide the vault path where the tm secrets are stored
+  # Eg. secretprefix: secret/warehouse-bes/crypto/warehouse/tm
+  ibftprefix: 
+  
