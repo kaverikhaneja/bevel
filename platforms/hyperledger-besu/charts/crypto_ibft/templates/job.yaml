@@ -117,7 +117,7 @@ spec:
             - name: NODE_TYPE
               value: {{ .Values.node.type }}
             - name: ADD_NEW_ORG
-              value: {{ .Value.checks.add_new_org }}
+              value: {{ .Values.checks.add_new_org }}
           command: ["/bin/bash", "-c"]
           args:
           - |-
@@ -221,6 +221,8 @@ spec:
               #create the validator address array
               echo "\"$(cat ${export_address})\"" >> ${BUILD_PATH}/validatorinfo
             done
+            
+            cat ${BUILD_PATH}/validatorinfo
 
             #this file is used by besu binary to generate the extra data information
             touch ${BUILD_PATH}/toEncode.json
@@ -229,6 +231,8 @@ spec:
             #new genesis file with extradata information
             touch ${BUILD_PATH}/crypto/newGenesis.json
             ls -l ${BUILD_PATH}/crypto
+
+            #store the node data in validator info 
 
             #create the rlp encoded string and add it to extraData field in newGenesis.json
             cat ${BUILD_PATH}/validatorinfo | paste -sd "," -| awk '{print "["$0"]"}'> ${BUILD_PATH}/toEncode.json
