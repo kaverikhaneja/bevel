@@ -109,6 +109,13 @@ spec:
             name: cryptocheck 
           - mountPath: /genesis-raw-config                             
             name: genesis-raw-config
+          env:
+            - name: NODE_NAME
+              value: {{ .Values.node.name }}
+            - name: NODE_ORG
+              value: {{ .Values.node.org }}
+            - name: NODE_TYPE
+              value: {{ .Values.node.type }}
           command: ["/bin/bash", "-c"]
           args:
           - |-
@@ -130,23 +137,31 @@ spec:
             ls -l
 
             #Get information about each validator node present in network.yaml and store it in an array
-            declare -a node
-            declare -a nodeOrg
-            declare -a nodeType
+            # declare -a node
+            # declare -a nodeOrg
+            # declare -a nodeType
+
+            node=${NODE_NAME}
+            nodeOrg=${NODE_ORG}
+            nodeType=${NODE_TYPE}
+
+            echo "node names: ${node[@]}"
+            echo "node organizations: ${nodeOrg[@]}"
+            echo "node types: ${nodeType[@]}"
             
-            for data in "${org[@]}";
-            do
-              nodeOrg+=(${data[name]})
-              nodeType+=(${data[type]})
-              if [${data.services.validators}]
-              then
-                node+=(${data.services.validators.validator.name})
-                echo "node_name = ${node[@]}"
-              else
-                node+=(${data.services.peers.peer.name})
-                echo "node_name = ${node[@]}"
-              fi
-            done
+            # for data in "${org[@]}";
+            # do
+            #   nodeOrg+=(${data[name]})
+            #   nodeType+=(${data[type]})
+            #   if [${data.services.validators}]
+            #   then
+            #     node+=(${data.services.validators.validator.name})
+            #     echo "node_name = ${node[@]}"
+            #   else
+            #     node+=(${data.services.peers.peer.name})
+            #     echo "node_name = ${node[@]}"
+            #   fi
+            # done
             
             #generate crypto for IBFT consensus
             /opt/besu/bin/besu operator generate-blockchain-config  --config-file=/genesis-raw-config/ibftConfigFile.json --to=${BUILD_PATH}/crypto  --private-key-file-name=key
@@ -204,7 +219,7 @@ spec:
 
             #new genesis file with extradata information
             touch ${BUILD_PATH}/crypto/newGenesis.json
-            ls -l ${BUILD_PATH}/
+            ls -l ${BUILD_PATH}/crypto
 
             #create the rlp encoded string and add it to extraData field in newGenesis.json
             cat ${BUILD_PATH}/validatorinfo | paste -sd "," -| awk '{print "["$0"]"}'> ${BUILD_PATH}/toEncode.json
