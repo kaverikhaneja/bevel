@@ -119,6 +119,7 @@ spec:
           command: ["/bin/bash", "-c"]
           args:
           - |-
+            ls -l /opt/
             curl -L -o /opt/orion/bin/jq https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64
             chmod +x /opt/orion/bin/jq
             
@@ -182,6 +183,7 @@ spec:
             for i in "${!node[@]}";
             do
               #echo "Node Paths: ${BUILD_PATH}/crypto/${nodeOrg[i]}/${node[i]}/data"
+              mkdir -p ${BUILD_PATH}/crypto/${nodeOrg[i]}/${node[i]}/data
               DEST+=(${BUILD_PATH}/crypto/${nodeOrg[i]}/${node[i]}/data)
             done
     
