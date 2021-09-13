@@ -210,8 +210,6 @@ spec:
 
             # echo "File paths: ${FILE_PATH[@]}"
             
-            
-  
             #create file to store addresses of validator nodes
             touch ${BUILD_PATH}/validatorinfo
             # ls -l ${BUILD_PATH}/
@@ -224,9 +222,9 @@ spec:
               #generate the node address for each node
               /opt/besu/bin/besu --data-path ${data_path} public-key export-address --to=${export_address}
 
-              # echo "nodeAddress directory check"
-              # ls -l ${BUILD_PATH}/crypto/${nodeOrg[i]}/${node[i]}/data/nodeAddress
-              find ${export_address} -type f
+              # echo "nodeAddress directory check: "
+              ls -l ${BUILD_PATH}/crypto/${nodeOrg[i]}/${node[i]}/data/nodeAddress/
+              
 
               base64 ${export_address} > nodeAddress_base64
 
@@ -250,9 +248,9 @@ spec:
               # fi
 
               # #create the validator address array
-              # if ; then
-              #   echo "\"$(cat ${export_address})\"" >> ${BUILD_PATH}/validatorinfo
-              # fi
+              if [${nodeType[i]}=="validator"]; then
+                echo "\"$(cat ${export_address})\"" >> ${BUILD_PATH}/validatorinfo
+              fi
               
             done
             
@@ -274,9 +272,9 @@ spec:
 
             base64 ${BUILD_PATH}/crypto/newGenesis.json > genesis_base64
 
-            #delete the keys directory
-            rm -r ${BUILD_PATH}/crypto/keys
-            ls -l  ${BUILD_PATH}/crypto/keys
+            # #delete the keys directory
+            # rm -r ${BUILD_PATH}/crypto/keys
+            # ls -l  ${BUILD_PATH}/crypto/keys
         
             #copy crypto to vault
             echo "Copy the crypto material to the vault"
