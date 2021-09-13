@@ -181,8 +181,8 @@ spec:
             /opt/besu/bin/besu operator generate-blockchain-config  --config-file=/genesis-raw-config/ibftConfigFile.json --to=${BUILD_PATH}/crypto  --private-key-file-name=key --public-key-file-name=key-pub
             ls -l ${BUILD_PATH}/crypto
             #get the list of folders created by besu in crypto directory
-            echo "Directories created by besu: " 
-            find ${BUILD_PATH}/crypto/ -mindepth 1 -type d
+            echo "Files created by besu: " 
+            find ${BUILD_PATH}/crypto/keys -type f
             #ls -l ${BUILD_PATH}/crypto/keys/
 
             declare -a FILE_PATH
@@ -246,10 +246,10 @@ spec:
               #   /opt/besu/bin/besu --data-path ${data_path} public-key export --to ${export_key_path}
               # fi
 
-              #create the validator address array
-              if ; then
-                echo "\"$(cat ${export_address})\"" >> ${BUILD_PATH}/validatorinfo
-              fi
+              # #create the validator address array
+              # if ; then
+              #   echo "\"$(cat ${export_address})\"" >> ${BUILD_PATH}/validatorinfo
+              # fi
               
             done
             
