@@ -221,12 +221,25 @@ spec:
               
               #generate the node address for each node
               /opt/besu/bin/besu --data-path ${data_path} public-key export-address --to ${export_address}
-              
+
               echo "nodeAddress directory check"
               ls -l ${BUILD_PATH}/crypto/${nodeOrg[i]}/${node[i]}/data/
 
-              # base64 ${export_address} > nodeAddress_base64
-              
+               # base64 ${export_address} > nodeAddress_base64
+
+              #copy the node addresses to the vault
+              #setting up env to login vault
+              KUBE_SA_TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
+              VAULT_TOKEN=$(curl -sS --request POST ${VAULT_ADDR}/v1/auth/${KUBERNETES_AUTH_PATH}/login -H "Content-Type: application/json" -d '{"role":"'"${VAULT_APP_ROLE}"'","jwt":"'"${KUBE_SA_TOKEN}"'"}' | jq -r 'if .errors then . else .auth.client_token end')
+              # validateVaultResponse 'vault login token' "${VAULT_TOKEN}"
+              echo "Logged into Vault"
+
+              # Copy the crypto material to the Vault
+              LOOKUP_SECRET_RESPONSE=$(curl -sS -H "X-Vault-Token: ${VAULT_TOKEN}" \
+                -H "Content-Type: application/json" \
+                -X POST \
+                -d '{"nodeAddress_base64":"'"$(cat {BUILD_PATH}/crypto/{nodeOrg[i]}/{node[i]}/data/nodeAddress)"'"}' ${VAULT_ADDR}/v1/${VAULT_SECRET_PREFIX}/${node[i]}/data | jq -r 'if .errors then . else .auth.client_token end')
+
               # if [${ADD_NEW_ORG} == "True"]; then
               #   #generate the node public key for each peer of new organization
               #   export_key_path=${BUILD_PATH}/crypto/${nodeOrg[i]}/${node[i]}/data/key.pub
