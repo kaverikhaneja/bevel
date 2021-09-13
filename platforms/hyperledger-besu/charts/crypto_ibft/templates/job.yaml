@@ -182,13 +182,13 @@ spec:
             # ls -l ${BUILD_PATH}/crypto
             #get the list of files created by besu in crypto directory
             echo "Files created by besu: " 
-            find ${BUILD_PATH}/crypto/keys -type f
+            find ${BUILD_PATH}/crypto/keys/ -type f
             #ls -l ${BUILD_PATH}/crypto/keys/
 
             declare -a FILE_PATH
             declare -a DEST
 
-            for folder in $(find ${BUILD_PATH}/crypto/keys -maxdepth 1 -mindepth 1 -type d);
+            for folder in $(find ${BUILD_PATH}/crypto/keys/ -mindepth 1 -type d);
             do
               # echo "Folders: ${folder}"
               FILE_PATH+=(${folder})
@@ -196,7 +196,6 @@ spec:
 
             for i in "${!node[@]}";
             do
-              #echo "Node Paths: ${BUILD_PATH}/crypto/${nodeOrg[i]}/${node[i]}/data"
               mkdir -p ${BUILD_PATH}/crypto/${nodeOrg[i]}/${node[i]}/data
               DEST+=(${BUILD_PATH}/crypto/${nodeOrg[i]}/${node[i]}/data)
             done
@@ -225,7 +224,7 @@ spec:
               /opt/besu/bin/besu --data-path ${data_path} public-key export-address --to=${export_address}
 
               echo "nodeAddress directory check"
-              ls -l ${BUILD_PATH}/crypto/${nodeOrg[i]}/${node[i]}/data/
+              ls -l ${BUILD_PATH}/crypto/${nodeOrg[i]}/${node[i]}/data/nodeAddress
 
               base64 ${export_address} > nodeAddress_base64
 
