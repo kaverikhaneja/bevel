@@ -112,7 +112,7 @@ spec:
           - mountPath: /genesis-raw-config                             
             name: genesis-raw-config
           securityContext:
-            allowprivilegeEscalation: false
+            allowPrivilegeEscalation: false
           env:
             - name: NODE_NAME
               value: {{ .Values.node.name }}
