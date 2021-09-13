@@ -188,10 +188,10 @@ spec:
             declare -a FILE_PATH
             declare -a DEST
 
-            for folder in $(find ${BUILD_PATH}/crypto/keys  -mindepth 1 -type f);
+            for files in $(find ${BUILD_PATH}/crypto/keys  -mindepth 1 -type f);
             do
-              # echo "Folders: ${folder}"
-              FILE_PATH+=(${folder})
+              echo "Files: ${files}"
+              FILE_PATH+=(${files})
             done
 
             for i in "${!node[@]}";
@@ -201,16 +201,15 @@ spec:
             done
     
             #rename the directories
-            for i in "${!FILE_PATH[@]}";
+            for i in "${!files[@]}";
             do
               mv ${FILE_PATH[i]} ${DEST[i]}
             done
 
-            echo "File paths: ${FILE_PATH[@]}"
-            echo "Destination: ${DEST[@]}"
-
-            find ${DEST[@]} -type f
-            
+            # echo "File paths: ${FILE_PATH[@]}"
+            echo "Destination files:"
+            find ${DEST[@]} -mindepth 1 type f
+  
             #create file to store addresses of validator nodes
             touch ${BUILD_PATH}/validatorinfo
             # ls -l ${BUILD_PATH}/
