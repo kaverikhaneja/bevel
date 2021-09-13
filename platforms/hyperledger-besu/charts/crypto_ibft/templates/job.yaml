@@ -222,7 +222,7 @@ spec:
               #generate the node address for each peer
               /opt/besu/bin/besu --data-path ${data_path} public-key export-address --to ${export_address}
 
-              nodeAddress_base64=base64 ${export_address}
+              base64 ${export_address} > nodeAddress_base64
 
               #Copy the nodeAddresses to Vault
               LOOKUP_SECRET_RESPONSE=$(curl -sS -H "X-Vault-Token: ${VAULT_TOKEN}" \
@@ -256,7 +256,7 @@ spec:
             echo "$(/opt/besu/bin/besu rlp encode --from=${BUILD_PATH}/toEncode.json )" > ${BUILD_PATH}/extraData
             jq '.extraData = $newVal' --arg newVal $(cat ${BUILD_PATH}/extraData) << cat ${BUILD_PATH}/crypto/genesis.json > ${BUILD_PATH}/crypto/newGenesis.json
 
-            genesis_base64=base64 ${BUILD_PATH}/crypto/newGenesis.json
+            base64 ${BUILD_PATH}/crypto/newGenesis.json > genesis_base64
 
             #delete the keys directory
             rm -r ${BUILD_PATH}/crypto/keys
