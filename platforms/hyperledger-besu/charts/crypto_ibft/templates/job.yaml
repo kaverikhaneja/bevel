@@ -205,7 +205,7 @@ spec:
             do
               mv ${FILE_PATH[i]} ${DEST[i]}
               echo "Destination files:"
-              find ${DEST[i]} -mindepth 1 -type f
+              ls -l ${DEST[i]}/
 
               # setting up env to login vault
               KUBE_SA_TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
@@ -219,10 +219,11 @@ spec:
                -X POST \
                -d '{"key_private":"'"$(cat ${DEST[i]}/key_private)"'"}' ${VAULT_ADDR}/v1/${VAULT_SECRET_PREFIX}/${node[i]}/data | jq -r 'if .errors then . else .auth.client_token end')
             done
+            echo "copied key_private to the vault"
 
             #create file to store addresses of validator nodes
             touch ${BUILD_PATH}/validatorinfo
-            # ls -l ${BUILD_PATH}/
+            #ls -l ${BUILD_PATH}/
 
             for i in "${!node[@]}";
             do
@@ -232,10 +233,9 @@ spec:
               #generate the node address for each node
               /opt/besu/bin/besu --data-path ${data_path} public-key export-address --to=${export_address}
 
-              # echo "nodeAddress directory check: "
-              ls -l ${BUILD_PATH}/crypto/${nodeOrg[i]}/${node[i]}/data/
+              echo "nodeAddress file check: "
+              cat ${export_address}
               
-
               base64 ${export_address} > nodeAddress_base64
 
               #copy the node addresses to the vault
@@ -250,7 +250,7 @@ spec:
                 -H "Content-Type: application/json" \
                 -X POST \
                 -d '{"nodeAddress_base64":"'"$(cat ${BUILD_PATH}/crypto/${nodeOrg[i]}/${node[i]}/data/nodeAddress)"'"}' ${VAULT_ADDR}/v1/${VAULT_SECRET_PREFIX}/${node[i]}/data | jq -r 'if .errors then . else .auth.client_token end')
-
+               echo "copied node addresses to the vault"
               # if [${ADD_NEW_ORG} == "True"]; then
               #   #generate the node public key for each peer of new organization
               #   export_key_path=${BUILD_PATH}/crypto/${nodeOrg[i]}/${node[i]}/data/key.pub
