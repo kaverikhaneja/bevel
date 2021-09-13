@@ -123,10 +123,10 @@ spec:
           - |-
             ls -l /opt/
             apt-get update 
-            apt-get -y install curl
+            apt-get install curl -y
             curl --version
-            curl -L -o /opt/orion/bin/jq https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64
-            chmod +x /opt/orion/bin/jq
+            curl -L -o /opt/besu/bin/jq https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64
+            chmod +x /opt/besu/bin/jq
             
             if [ -e /cryptocheck/present.txt ]
             then
@@ -211,7 +211,7 @@ spec:
               data_path=${BUILD_PATH}/crypto/${nodeOrg[i]}/${node[i]}/data
               export_address=${BUILD_PATH}/crypto/${nodeOrg[i]}/${node[i]}/data/nodeAddress
               /opt/besu/bin/besu --data-path ${data_path} public-key export-address --to ${export_address}
-              ls -l ${data_path}/data
+              ls -l ${data_path}/
               
               if [$ADD_NEW_ORG=="True"]; then
                 #generate the node public key for each peer of new organization
@@ -237,9 +237,9 @@ spec:
             cat ${BUILD_PATH}/validatorinfo | paste -sd "," -| awk '{print "["$0"]"}'> ${BUILD_PATH}/toEncode.json
             echo "$(/opt/besu/bin/besu rlp encode --from=${BUILD_PATH}/toEncode.json )" > ${BUILD_PATH}/extraData
             jq '.extraData = $newVal' --arg newVal $(cat ${BUILD_PATH}/extraData) << cat ${BUILD_PATH}/crypto/genesis.json > ${BUILD_PATH}/crypto/newGenesis.json
-
             #delete the keys directory
             rm -r ${BUILD_PATH}/crypto/keys
+            ls -l  ${BUILD_PATH}/crypto/
         - name: store-crypto
           image: {{ .Values.image.initContainerImage }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
