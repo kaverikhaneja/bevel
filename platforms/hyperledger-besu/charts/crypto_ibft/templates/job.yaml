@@ -122,6 +122,18 @@ spec:
               value: {{ .Values.node.type }}
             - name: ADD_NEW_ORG
               value: {{ .Values.checks.add_new_org | quote }}
+            - name: COMPONENT_NAME
+              value: {{ .Values.metadata.name }}
+            - name: VAULT_SECRET_PREFIX
+              value: {{ .Values.vault.ibftprefix }}
+            - name: VAULT_ADDR
+              value: {{ .Values.vault.address }}
+            - name: KUBERNETES_AUTH_PATH
+              value: {{ .Values.vault.authpath }}
+            - name: VAULT_APP_ROLE
+              value: {{ .Values.vault.role }}
+            - name: PEER_NAME
+              value: {{ .Values.metadata.peer.name }}
           command: ["/bin/bash", "-c"]
           args:
           - |-
@@ -131,6 +143,7 @@ spec:
             curl --version
             curl -L -o /opt/besu/bin/jq https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64
             chmod +x /opt/besu/bin/jq
+            jq --version
             
             if [ -e /cryptocheck/present.txt ]
             then
@@ -215,7 +228,6 @@ spec:
               data_path=${BUILD_PATH}/crypto/${nodeOrg[i]}/${node[i]}/data
               export_address=${BUILD_PATH}/crypto/${nodeOrg[i]}/${node[i]}/data/nodeAddress
               /opt/besu/bin/besu --data-path ${data_path} public-key export-address --to ${export_address}
-              ls -l ${data_path}/
               
               # if [${ADD_NEW_ORG} == "True"]; then
               #   #generate the node public key for each peer of new organization
@@ -246,27 +258,9 @@ spec:
 
             #delete the keys directory
             rm -r ${BUILD_PATH}/crypto/keys
-            ls -l  ${BUILD_PATH}/crypto/
-        - name: store-crypto
-          image: {{ .Values.image.initContainerImage }}
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
-          env:
-            - name: COMPONENT_NAME
-              value: {{ .Values.metadata.name }}
-            - name: VAULT_SECRET_PREFIX
-              value: {{ .Values.vault.ibftprefix }}
-            - name: VAULT_ADDR
-              value: {{ .Values.vault.address }}
-            - name: KUBERNETES_AUTH_PATH
-              value: {{ .Values.vault.authpath }}
-            - name: VAULT_APP_ROLE
-              value: {{ .Values.vault.role }}
-            - name: PEER_NAME
-              value: {{ .Values.metadata.peer.name}}
-          command: ["sh", "-c"]
-          args:
-          - |-
-            #!/usr/bin/env sh
+            ls -l  ${BUILD_PATH}/crypto/keys
+        
+            #copy crypto to vault
 
             validateVaultResponse () {
                 if echo ${2} | grep "errors"; then
@@ -318,5 +312,7 @@ spec:
              -H "Content-Type: application/json" \
              -X POST \
              -d '{"genesis":"${GENESIS}}' ${VAULT_ADDR}/v1/${VAULT_SECRET_PREFIX}/genesis | jq -r 'if .errors then . else .auth.client_token end')
+
+             echo "Done copying crypto material to the vault"
         
        
