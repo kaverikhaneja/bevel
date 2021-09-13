@@ -204,11 +204,13 @@ spec:
             for i in "${!folder[@]}";
             do
               mv ${FILE_PATH[i]} ${DEST[i]}
+              echo "Destination files:"
+              find ${DEST[@]} -mindepth 1 -type f
             done
 
             # echo "File paths: ${FILE_PATH[@]}"
-            echo "Destination files:"
-            find ${DEST[@]} -mindepth 1 -type f
+            
+            
   
             #create file to store addresses of validator nodes
             touch ${BUILD_PATH}/validatorinfo
