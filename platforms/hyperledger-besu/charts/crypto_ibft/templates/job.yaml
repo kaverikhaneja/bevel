@@ -122,8 +122,8 @@ spec:
           args:
           - |-
             ls -l /opt/
-            apt-get update 
-            apt-get install curl -y
+            sudo apt-get update 
+            sudo apt-get install curl -y
             curl --version
             curl -L -o /opt/besu/bin/jq https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64
             chmod +x /opt/besu/bin/jq
@@ -213,7 +213,7 @@ spec:
               /opt/besu/bin/besu --data-path ${data_path} public-key export-address --to ${export_address}
               ls -l ${data_path}/
               
-              if [${ADD_NEW_ORG} == "True"]; then
+              if [[${ADD_NEW_ORG} == 'True']]; then
                 #generate the node public key for each peer of new organization
                 export_key_path=${BUILD_PATH}/crypto/${nodeOrg[i]}/${node[i]}/data/key.pub
                 /opt/besu/bin/besu --data-path ${data_path} public-key export --to ${export_key_path}
