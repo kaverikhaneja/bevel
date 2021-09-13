@@ -182,13 +182,13 @@ spec:
             # ls -l ${BUILD_PATH}/crypto
             #get the list of files created by besu in crypto directory
             echo "Files created by besu: " 
-            find ${BUILD_PATH}/crypto/keys/ -type f
+            # find ${BUILD_PATH}/crypto/keys/ -type f
             #ls -l ${BUILD_PATH}/crypto/keys/
 
             declare -a FILE_PATH
             declare -a DEST
 
-            for folder in $(find ${BUILD_PATH}/crypto/keys/ -mindepth 1 -type d);
+            for folder in $(find ${BUILD_PATH}/crypto/keys  -mindepth 1 -type f);
             do
               # echo "Folders: ${folder}"
               FILE_PATH+=(${folder})
