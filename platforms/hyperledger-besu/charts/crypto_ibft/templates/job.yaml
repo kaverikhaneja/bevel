@@ -178,9 +178,9 @@ spec:
             
             #generate crypto for IBFT consensus
             echo "generate crypto for IBFT consensus"
-            /opt/besu/bin/besu operator generate-blockchain-config  --config-file=/genesis-raw-config/ibftConfigFile.json --to=${BUILD_PATH}/crypto  --private-key-file-name=key --public-key-file-name=key-pub
-            ls -l ${BUILD_PATH}/crypto
-            #get the list of folders created by besu in crypto directory
+            /opt/besu/bin/besu operator generate-blockchain-config  --config-file=/genesis-raw-config/ibftConfigFile.json --to=${BUILD_PATH}/crypto  --private-key-file-name=key
+            # ls -l ${BUILD_PATH}/crypto
+            #get the list of files created by besu in crypto directory
             echo "Files created by besu: " 
             find ${BUILD_PATH}/crypto/keys -type f
             #ls -l ${BUILD_PATH}/crypto/keys/
@@ -209,10 +209,12 @@ spec:
 
             echo "File paths: ${FILE_PATH[@]}"
             echo "Destination: ${DEST[@]}"
+
+            find ${DEST[@]} -type f
             
             #create file to store addresses of validator nodes
             touch ${BUILD_PATH}/validatorinfo
-            ls -l ${BUILD_PATH}/
+            # ls -l ${BUILD_PATH}/
 
             for i in "${!node[@]}";
             do
@@ -220,12 +222,12 @@ spec:
               export_address=${BUILD_PATH}/crypto/${nodeOrg[i]}/${node[i]}/data/nodeAddress
               
               #generate the node address for each node
-              /opt/besu/bin/besu --data-path ${data_path} public-key export-address --to ${export_address}
+              /opt/besu/bin/besu --data-path ${data_path} public-key export-address --to=${export_address}
 
               echo "nodeAddress directory check"
               ls -l ${BUILD_PATH}/crypto/${nodeOrg[i]}/${node[i]}/data/
 
-               # base64 ${export_address} > nodeAddress_base64
+              base64 ${export_address} > nodeAddress_base64
 
               #copy the node addresses to the vault
               #setting up env to login vault
@@ -243,7 +245,7 @@ spec:
               # if [${ADD_NEW_ORG} == "True"]; then
               #   #generate the node public key for each peer of new organization
               #   export_key_path=${BUILD_PATH}/crypto/${nodeOrg[i]}/${node[i]}/data/key.pub
-              #   /opt/besu/bin/besu --data-path ${data_path} public-key export --to ${export_key_path}
+              #   /opt/besu/bin/besu --data-path ${data_path} public-key export --to=${export_key_path}
               # fi
 
               # #create the validator address array
