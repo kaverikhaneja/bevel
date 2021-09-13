@@ -214,8 +214,6 @@ spec:
             touch ${BUILD_PATH}/validatorinfo
             ls -l ${BUILD_PATH}/
 
-            exit 0
-            
             for i in "${!node[@]}";
             do
               data_path=${BUILD_PATH}/crypto/${nodeOrg[i]}/${node[i]}/data
