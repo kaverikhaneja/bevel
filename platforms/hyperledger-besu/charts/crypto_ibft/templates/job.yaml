@@ -207,6 +207,17 @@ spec:
               echo "Destination files:"
               find ${DEST[i]} -mindepth 1 -type f
 
+              # setting up env to login vault
+              KUBE_SA_TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
+              VAULT_TOKEN=$(curl -sS --request POST ${VAULT_ADDR}/v1/auth/${KUBERNETES_AUTH_PATH}/login -H "Content-Type: application/json" -d '{"role":"'"${VAULT_APP_ROLE}"'","jwt":"'"${KUBE_SA_TOKEN}"'"}' | jq -r 'if .errors then . else .auth.client_token end')
+              # validateVaultResponse 'vault login token' "${VAULT_TOKEN}"
+              echo "Logged into Vault"
+
+              # Copy the crypto material to the Vault
+              LOOKUP_SECRET_RESPONSE=$(curl -sS -H "X-Vault-Token: ${VAULT_TOKEN}" \
+               -H "Content-Type: application/json" \
+               -X POST \
+               -d '{"key":"'"$(cat ${DEST[i]}/key)"'"}' ${VAULT_ADDR}/v1/${VAULT_SECRET_PREFIX}/${node[i]}/data | jq -r 'if .errors then . else .auth.client_token end')
             done
 
             # echo "File paths: ${FILE_PATH[@]}"
@@ -224,7 +235,7 @@ spec:
               /opt/besu/bin/besu --data-path ${data_path} public-key export-address --to=${export_address}
 
               # echo "nodeAddress directory check: "
-              ls -l ${BUILD_PATH}/crypto/${nodeOrg[i]}/${node[i]}/data/nodeAddress/
+              ls -l ${BUILD_PATH}/crypto/${nodeOrg[i]}/${node[i]}/data/
               
 
               base64 ${export_address} > nodeAddress_base64
@@ -249,7 +260,7 @@ spec:
               # fi
 
               # #create the validator address array
-              if [${nodeType[i]}=="validator"]; then
+              if [[ ${nodeType[i]} == "validator" ]]; then
                 echo "\"$(cat ${export_address})\"" >> ${BUILD_PATH}/validatorinfo
               fi
               
