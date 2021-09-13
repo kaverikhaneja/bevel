@@ -228,12 +228,6 @@ spec:
               ls -l ${BUILD_PATH}/crypto/${nodeOrg[i]}/${node[i]}/data/
 
               # base64 ${export_address} > nodeAddress_base64
-
-              # #Copy the nodeAddresses to Vault
-              # LOOKUP_SECRET_RESPONSE=$(curl -sS -H "X-Vault-Token: ${VAULT_TOKEN}" \
-              #   -H "Content-Type: application/json" \
-              #   -X POST \
-              #   -d '{"nodeAddress":"'"$(cat nodeAddress_base64)"'"}' ${VAULT_ADDR}/v1/${VAULT_SECRET_PREFIX}/${PEER_NAME}/data | jq -r 'if .errors then . else .auth.client_token end')
               
               # if [${ADD_NEW_ORG} == "True"]; then
               #   #generate the node public key for each peer of new organization
