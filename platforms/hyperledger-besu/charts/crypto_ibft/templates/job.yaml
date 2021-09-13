@@ -188,20 +188,20 @@ spec:
             declare -a FILE_PATH
             declare -a DEST
 
-            for files in $(find ${BUILD_PATH}/crypto/keys  -mindepth 1 -type f);
+            for folder in $(find ${BUILD_PATH}/crypto/keys -maxdepth 1 -mindepth 1 -type d);
             do
-              echo "Files: ${files}"
-              FILE_PATH+=(${files})
+              echo "Folders: ${folder}"
+              FILE_PATH+=(${folder})
             done
 
             for i in "${!node[@]}";
             do
-              mkdir -p ${BUILD_PATH}/crypto/${nodeOrg[i]}/${node[i]}/data
+              mkdir -p ${BUILD_PATH}/crypto/${nodeOrg[i]}/${node[i]}
               DEST+=(${BUILD_PATH}/crypto/${nodeOrg[i]}/${node[i]}/data)
             done
     
             #rename the directories
-            for i in "${!files[@]}";
+            for i in "${!folder[@]}";
             do
               mv ${FILE_PATH[i]} ${DEST[i]}
             done
