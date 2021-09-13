@@ -33,6 +33,8 @@ spec:
               items:
                 - key: ibftConfigFile.json
                   path: ibftConfigFile.json
+        securityContext:
+          runAsUser: 0
         initContainers:
         - name: init-check-crypto
           image: {{ .Values.image.initContainerImage }}
@@ -109,6 +111,8 @@ spec:
             name: cryptocheck 
           - mountPath: /genesis-raw-config                             
             name: genesis-raw-config
+          securityContext:
+            allowprivilegeEscalation: false
           env:
             - name: NODE_NAME
               value: {{ .Values.node.name }}
@@ -213,7 +217,7 @@ spec:
               /opt/besu/bin/besu --data-path ${data_path} public-key export-address --to ${export_address}
               ls -l ${data_path}/
               
-              if [[${ADD_NEW_ORG} == 'True']]; then
+              if [${ADD_NEW_ORG} == "True"]; then
                 #generate the node public key for each peer of new organization
                 export_key_path=${BUILD_PATH}/crypto/${nodeOrg[i]}/${node[i]}/data/key.pub
                 /opt/besu/bin/besu --data-path ${data_path} public-key export --to ${export_key_path}
