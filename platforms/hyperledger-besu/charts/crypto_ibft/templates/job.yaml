@@ -133,10 +133,10 @@ spec:
           command: ["/bin/bash", "-c"]
           args:
           - |-
-            curl --version
+            # curl --version
             curl -L -o /opt/besu/bin/jq https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64
             chmod +x /opt/besu/bin/jq
-            jq --version
+            # jq --version
             
             if [ -e /cryptocheck/present.txt ]
             then
@@ -149,9 +149,7 @@ spec:
             mkdir -p ${BUILD_PATH}
             #mkdir -p ${BUILD_PATH}/crypto
             
-            ls -l
-
-            #Get information about each validator node present in network.yaml and store it in an array
+            #Get information about each node present in network.yaml and store it in an array
             declare -a node
             declare -a nodeOrg
             declare -a nodeType
@@ -179,10 +177,12 @@ spec:
             # done
             
             #generate crypto for IBFT consensus
+            echo "generate crypto for IBFT consensus"
             /opt/besu/bin/besu operator generate-blockchain-config  --config-file=/genesis-raw-config/ibftConfigFile.json --to=${BUILD_PATH}/crypto  --private-key-file-name=key
-            ls -l ${BUILD_PATH}/
+            ls -l ${BUILD_PATH}/crypto
             #get the list of folders created by besu in crypto directory
-            #find ${BUILD_PATH}/crypto/keys -maxdepth 1 -mindepth 1 -type d
+            echo "Directories created by besu: " 
+            find ${BUILD_PATH}/crypto/ -mindepth 1 -type d
             #ls -l ${BUILD_PATH}/crypto/keys/
 
             declare -a FILE_PATH
@@ -190,7 +190,7 @@ spec:
 
             for folder in $(find ${BUILD_PATH}/crypto/keys -maxdepth 1 -mindepth 1 -type d);
             do
-              echo "Folders: ${folder}"
+              # echo "Folders: ${folder}"
               FILE_PATH+=(${folder})
             done
 
@@ -213,22 +213,27 @@ spec:
             #create file to store addresses of validator nodes
             touch ${BUILD_PATH}/validatorinfo
             ls -l ${BUILD_PATH}/
+
+            exit 0
             
             for i in "${!node[@]}";
             do
               data_path=${BUILD_PATH}/crypto/${nodeOrg[i]}/${node[i]}/data
               export_address=${BUILD_PATH}/crypto/${nodeOrg[i]}/${node[i]}/data/nodeAddress
               
-              #generate the node address for each peer
+              #generate the node address for each node
               /opt/besu/bin/besu --data-path ${data_path} public-key export-address --to ${export_address}
+              
+              echo "nodeAddress directory check"
+              ls -l ${BUILD_PATH}/crypto/${nodeOrg[i]}/${node[i]}/data/
 
-              base64 ${export_address} > nodeAddress_base64
+              # base64 ${export_address} > nodeAddress_base64
 
-              #Copy the nodeAddresses to Vault
-              LOOKUP_SECRET_RESPONSE=$(curl -sS -H "X-Vault-Token: ${VAULT_TOKEN}" \
-                -H "Content-Type: application/json" \
-                -X POST \
-                -d '{"nodeAddress":"'"$(cat nodeAddress_base64)"'"}' ${VAULT_ADDR}/v1/${VAULT_SECRET_PREFIX}/${PEER_NAME}/data | jq -r 'if .errors then . else .auth.client_token end')
+              # #Copy the nodeAddresses to Vault
+              # LOOKUP_SECRET_RESPONSE=$(curl -sS -H "X-Vault-Token: ${VAULT_TOKEN}" \
+              #   -H "Content-Type: application/json" \
+              #   -X POST \
+              #   -d '{"nodeAddress":"'"$(cat nodeAddress_base64)"'"}' ${VAULT_ADDR}/v1/${VAULT_SECRET_PREFIX}/${PEER_NAME}/data | jq -r 'if .errors then . else .auth.client_token end')
               
               # if [${ADD_NEW_ORG} == "True"]; then
               #   #generate the node public key for each peer of new organization
@@ -237,7 +242,10 @@ spec:
               # fi
 
               #create the validator address array
-              echo "\"$(cat ${export_address})\"" >> ${BUILD_PATH}/validatorinfo
+              if ; then
+                echo "\"$(cat ${export_address})\"" >> ${BUILD_PATH}/validatorinfo
+              fi
+              
             done
             
             cat ${BUILD_PATH}/validatorinfo
