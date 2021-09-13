@@ -1,0 +1,42 @@
+apiVersion: helm.fluxcd.io/v1
+kind: HelmRelease
+metadata:
+  name: carrierkav-ibft-job
+  namespace: carrierkav-bes
+  annotations:
+    flux.weave.works/automated: "false"
+spec:
+  releaseName: carrierkav-ibft-job
+  helmVersion: v3
+  chart:
+    path: platforms/hyperledger-besu/charts/crypto_ibft
+    git: https://github.com/kaverikhaneja/blockchain-automation-framework.git
+    ref: feature-1628
+  values:
+    metadata:
+      name: carrierkav-ibft-job
+      namespace: carrierkav-bes   
+      item:
+        name: carrierkav
+      peer:
+        name: peer1
+    node:
+      name:  validator1 validator2 peer1
+      org:  supplychainkav supplychainkav carrierkav
+      type:  validator validator member
+    image: 
+      repository: hyperledger/besu
+      initContainerImage: index.docker.io/hyperledgerlabs/alpine-utils:1.0
+      pullPolicy: IfNotPresent
+    configMap: 
+      name: ibft-config
+      total_peer_count: 3
+    vault:
+      address: http://vault.internal.dev2.aws.blockchaincloudpoc-develop.com:20001
+      authpath: besucarrierkav				
+      role: vault-role									
+      serviceaccountname: vault-auth
+      ibftprefix: secret/carrierkav-bes/crypto/   
+    checks:
+      add_new_org: False
+   
