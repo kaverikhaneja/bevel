@@ -117,7 +117,7 @@ spec:
             - name: NODE_TYPE
               value: {{ .Values.node.type }}
             - name: ADD_NEW_ORG
-              value: {{ .Values.checks.add_new_org }}
+              value: {{ .Values.checks.add_new_org | quote }}
           command: ["/bin/bash", "-c"]
           args:
           - |-
@@ -213,7 +213,7 @@ spec:
               /opt/besu/bin/besu --data-path ${data_path} public-key export-address --to ${export_address}
               ls -l ${data_path}/data
               
-              if [$ADD_NEW_ORG]; then
+              if [$ADD_NEW_ORG=="True"]; then
                 #generate the node public key for each peer of new organization
                 export_key_path=${BUILD_PATH}/crypto/${nodeOrg[i]}/${node[i]}/data/key.pub
                 /opt/besu/bin/besu --data-path ${data_path} public-key export --to ${export_key_path}
