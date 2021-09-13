@@ -122,7 +122,8 @@ spec:
           args:
           - |-
             ls -l /opt/
-            apt install curl
+            apt-get update 
+            apt-get -y install curl
             curl --version
             curl -L -o /opt/orion/bin/jq https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64
             chmod +x /opt/orion/bin/jq
@@ -232,8 +233,6 @@ spec:
             touch ${BUILD_PATH}/crypto/newGenesis.json
             ls -l ${BUILD_PATH}/crypto
 
-            #store the node data in validator info 
-
             #create the rlp encoded string and add it to extraData field in newGenesis.json
             cat ${BUILD_PATH}/validatorinfo | paste -sd "," -| awk '{print "["$0"]"}'> ${BUILD_PATH}/toEncode.json
             echo "$(/opt/besu/bin/besu rlp encode --from=${BUILD_PATH}/toEncode.json )" > ${BUILD_PATH}/extraData
@@ -241,8 +240,6 @@ spec:
 
             #delete the keys directory
             rm -r ${BUILD_PATH}/crypto/keys
-
-            exit 0
         - name: store-crypto
           image: {{ .Values.image.initContainerImage }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
