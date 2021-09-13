@@ -205,7 +205,8 @@ spec:
             do
               mv ${FILE_PATH[i]} ${DEST[i]}
               echo "Destination files:"
-              find ${DEST[@]} -mindepth 1 -type f
+              find ${DEST[i]} -mindepth 1 -type f
+
             done
 
             # echo "File paths: ${FILE_PATH[@]}"
@@ -308,11 +309,11 @@ spec:
             validateVaultResponse 'vault login token' "${VAULT_TOKEN}"
               echo "Logged into Vault"
 
-            # Copy the crypto material to the Vault
-            LOOKUP_SECRET_RESPONSE=$(curl -sS -H "X-Vault-Token: ${VAULT_TOKEN}" \
-             -H "Content-Type: application/json" \
-             -X POST \
-             -d '{"key":"'"$(cat${BUILD_PATH}/crypto/${COMPONENT_NAME}/${PEER_NAME}/data/key)"'"}' ${VAULT_ADDR}/v1/${VAULT_SECRET_PREFIX}/${PEER_NAME}/data | jq -r 'if .errors then . else .auth.client_token end')
+            # # Copy the crypto material to the Vault
+            # LOOKUP_SECRET_RESPONSE=$(curl -sS -H "X-Vault-Token: ${VAULT_TOKEN}" \
+            #  -H "Content-Type: application/json" \
+            #  -X POST \
+            #  -d '{"key":"'"$(cat${BUILD_PATH}/crypto/${COMPONENT_NAME}/${PEER_NAME}/data/key)"'"}' ${VAULT_ADDR}/v1/${VAULT_SECRET_PREFIX}/${PEER_NAME}/data | jq -r 'if .errors then . else .auth.client_token end')
           
             # Copy the crypto material to the Vault
             LOOKUP_SECRET_RESPONSE=$(curl -sS -H "X-Vault-Token: ${VAULT_TOKEN}" \
