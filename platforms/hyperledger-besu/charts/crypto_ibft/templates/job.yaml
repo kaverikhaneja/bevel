@@ -213,7 +213,7 @@ spec:
               /opt/besu/bin/besu --data-path ${data_path} public-key export-address --to ${export_address}
               ls -l ${data_path}/
               
-              if [$ADD_NEW_ORG=="True"]; then
+              if [${ADD_NEW_ORG}="True"]; then
                 #generate the node public key for each peer of new organization
                 export_key_path=${BUILD_PATH}/crypto/${nodeOrg[i]}/${node[i]}/data/key.pub
                 /opt/besu/bin/besu --data-path ${data_path} public-key export --to ${export_key_path}
@@ -237,6 +237,7 @@ spec:
             cat ${BUILD_PATH}/validatorinfo | paste -sd "," -| awk '{print "["$0"]"}'> ${BUILD_PATH}/toEncode.json
             echo "$(/opt/besu/bin/besu rlp encode --from=${BUILD_PATH}/toEncode.json )" > ${BUILD_PATH}/extraData
             jq '.extraData = $newVal' --arg newVal $(cat ${BUILD_PATH}/extraData) << cat ${BUILD_PATH}/crypto/genesis.json > ${BUILD_PATH}/crypto/newGenesis.json
+
             #delete the keys directory
             rm -r ${BUILD_PATH}/crypto/keys
             ls -l  ${BUILD_PATH}/crypto/
