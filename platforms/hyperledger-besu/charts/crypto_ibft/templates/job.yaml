@@ -145,8 +145,7 @@ spec:
             fi
 
             BUILD_PATH="build"
-            GENESIS="${BUILD_PATH}/crypto/newGenesis.json"
-
+            
             mkdir -p ${BUILD_PATH}
             #mkdir -p ${BUILD_PATH}/crypto
             
@@ -217,10 +216,19 @@ spec:
             
             for i in "${!node[@]}";
             do
-              #generate the node address for each peer
               data_path=${BUILD_PATH}/crypto/${nodeOrg[i]}/${node[i]}/data
               export_address=${BUILD_PATH}/crypto/${nodeOrg[i]}/${node[i]}/data/nodeAddress
+              
+              #generate the node address for each peer
               /opt/besu/bin/besu --data-path ${data_path} public-key export-address --to ${export_address}
+
+              nodeAddress_base64=base64 ${export_address}
+
+              #Copy the nodeAddresses to Vault
+              LOOKUP_SECRET_RESPONSE=$(curl -sS -H "X-Vault-Token: ${VAULT_TOKEN}" \
+                -H "Content-Type: application/json" \
+                -X POST \
+                -d '{"nodeAddress":"'"$(cat nodeAddress_base64)"'"}' ${VAULT_ADDR}/v1/${VAULT_SECRET_PREFIX}/${PEER_NAME}/data | jq -r 'if .errors then . else .auth.client_token end')
               
               # if [${ADD_NEW_ORG} == "True"]; then
               #   #generate the node public key for each peer of new organization
@@ -236,6 +244,7 @@ spec:
 
             #this file is used by besu binary to generate the extra data information
             touch ${BUILD_PATH}/toEncode.json
+            touch ${BUILD_PATH}/extraData
             ls -l ${BUILD_PATH}/
 
             #new genesis file with extradata information
@@ -247,13 +256,14 @@ spec:
             echo "$(/opt/besu/bin/besu rlp encode --from=${BUILD_PATH}/toEncode.json )" > ${BUILD_PATH}/extraData
             jq '.extraData = $newVal' --arg newVal $(cat ${BUILD_PATH}/extraData) << cat ${BUILD_PATH}/crypto/genesis.json > ${BUILD_PATH}/crypto/newGenesis.json
 
-            cat ${BUILD_PATH}/crypto/newGenesis.json
+            genesis_base64=base64 ${BUILD_PATH}/crypto/newGenesis.json
 
             #delete the keys directory
             rm -r ${BUILD_PATH}/crypto/keys
             ls -l  ${BUILD_PATH}/crypto/keys
         
             #copy crypto to vault
+            echo "Copy the crypto material to the vault"
 
             validateVaultResponse () {
                 if echo ${2} | grep "errors"; then
@@ -275,6 +285,8 @@ spec:
                   fi
                 fi
               }
+            
+            # GENESIS_VAULT_PATH="${BUILD_PATH}/crypto/newGenesis.json"
 
             # setting up env to login vault
             KUBE_SA_TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
@@ -286,26 +298,25 @@ spec:
             LOOKUP_SECRET_RESPONSE=$(curl -sS -H "X-Vault-Token: ${VAULT_TOKEN}" \
              -H "Content-Type: application/json" \
              -X POST \
-             -d '{"key":"$(cat${BUILD_PATH}/crypto/${COMPONENT_NAME}/${PEER_NAME}/data/key)"}' ${VAULT_ADDR}/v1/${VAULT_SECRET_PREFIX}/${PEER_NAME}/data | jq -r 'if .errors then . else .auth.client_token end')
+             -d '{"key":"'"$(cat${BUILD_PATH}/crypto/${COMPONENT_NAME}/${PEER_NAME}/data/key)"'"}' ${VAULT_ADDR}/v1/${VAULT_SECRET_PREFIX}/${PEER_NAME}/data | jq -r 'if .errors then . else .auth.client_token end')
           
             # Copy the crypto material to the Vault
             LOOKUP_SECRET_RESPONSE=$(curl -sS -H "X-Vault-Token: ${VAULT_TOKEN}" \
              -H "Content-Type: application/json" \
              -X POST \
-             -d '{"key_pub":"$(cat${BUILD_PATH}/crypto/${COMPONENT_NAME}/${PEER_NAME}/data/key.pub)"}' ${VAULT_ADDR}/v1/${VAULT_SECRET_PREFIX}/${PEER_NAME}/data | jq -r 'if .errors then . else .auth.client_token end')
+             -d '{"key_pub":"'"$(cat${BUILD_PATH}/crypto/${COMPONENT_NAME}/${PEER_NAME}/data/key.pub)"'"}' ${VAULT_ADDR}/v1/${VAULT_SECRET_PREFIX}/${PEER_NAME}/data | jq -r 'if .errors then . else .auth.client_token end')
 
-            # Copy the crypto material to the Vault
-            LOOKUP_SECRET_RESPONSE=$(curl -sS -H "X-Vault-Token: ${VAULT_TOKEN}" \
-             -H "Content-Type: application/json" \
-             -X POST \
-             -d '{"nodeAddress":"$(cat${BUILD_PATH}/crypto/${COMPONENT_NAME}/${PEER_NAME}/data/nodeAddress)"}' ${VAULT_ADDR}/v1/${VAULT_SECRET_PREFIX}/${PEER_NAME}/data | jq -r 'if .errors then . else .auth.client_token end')
+            # # Copy the crypto material to the Vault
+            # LOOKUP_SECRET_RESPONSE=$(curl -sS -H "X-Vault-Token: ${VAULT_TOKEN}" \
+            #  -H "Content-Type: application/json" \
+            #  -X POST \
+            #  -d '{"nodeAddress":"'"$(cat${BUILD_PATH}/crypto/${COMPONENT_NAME}/${PEER_NAME}/data/nodeAddress)"'"}' ${VAULT_ADDR}/v1/${VAULT_SECRET_PREFIX}/${PEER_NAME}/data | jq -r 'if .errors then . else .auth.client_token end')
 
             # Copy genesis to vault
             LOOKUP_SECRET_RESPONSE=$(curl -sS -H "X-Vault-Token: ${VAULT_TOKEN}" \
              -H "Content-Type: application/json" \
              -X POST \
-             -d '{"genesis":"${GENESIS}}' ${VAULT_ADDR}/v1/${VAULT_SECRET_PREFIX}/genesis | jq -r 'if .errors then . else .auth.client_token end')
-
+             -d '{"genesis":"'"$(cat genesis_base64)"'"}' ${VAULT_ADDR}/v1/${VAULT_SECRET_PREFIX}/genesis | jq -r 'if .errors then . else .auth.client_token end')
              echo "Done copying crypto material to the vault"
         
        
