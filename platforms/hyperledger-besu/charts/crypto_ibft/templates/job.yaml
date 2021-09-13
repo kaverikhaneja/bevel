@@ -178,7 +178,7 @@ spec:
             
             #generate crypto for IBFT consensus
             echo "generate crypto for IBFT consensus"
-            /opt/besu/bin/besu operator generate-blockchain-config  --config-file=/genesis-raw-config/ibftConfigFile.json --to=${BUILD_PATH}/crypto  --private-key-file-name=key
+            /opt/besu/bin/besu operator generate-blockchain-config  --config-file=/genesis-raw-config/ibftConfigFile.json --to=${BUILD_PATH}/crypto  --private-key-file-name=key --public-key-file-name=key-pub
             ls -l ${BUILD_PATH}/crypto
             #get the list of folders created by besu in crypto directory
             echo "Directories created by besu: " 
