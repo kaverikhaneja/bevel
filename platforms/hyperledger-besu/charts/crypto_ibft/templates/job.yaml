@@ -178,7 +178,7 @@ spec:
             
             #generate crypto for IBFT consensus
             echo "generate crypto for IBFT consensus"
-            /opt/besu/bin/besu operator generate-blockchain-config  --config-file=/genesis-raw-config/ibftConfigFile.json --to=${BUILD_PATH}/crypto  --private-key-file-name=key
+            /opt/besu/bin/besu operator generate-blockchain-config  --config-file=/genesis-raw-config/ibftConfigFile.json --to=${BUILD_PATH}/crypto  --private-key-file-name=key_private
             # ls -l ${BUILD_PATH}/crypto
             #get the list of files created by besu in crypto directory
             # echo "Files created by besu: " 
@@ -217,11 +217,9 @@ spec:
               LOOKUP_SECRET_RESPONSE=$(curl -sS -H "X-Vault-Token: ${VAULT_TOKEN}" \
                -H "Content-Type: application/json" \
                -X POST \
-               -d '{"key":"'"$(cat ${DEST[i]}/key)"'"}' ${VAULT_ADDR}/v1/${VAULT_SECRET_PREFIX}/${node[i]}/data | jq -r 'if .errors then . else .auth.client_token end')
+               -d '{"key_private":"'"$(cat ${DEST[i]}/key_private)"'"}' ${VAULT_ADDR}/v1/${VAULT_SECRET_PREFIX}/${node[i]}/data | jq -r 'if .errors then . else .auth.client_token end')
             done
 
-            # echo "File paths: ${FILE_PATH[@]}"
-            
             #create file to store addresses of validator nodes
             touch ${BUILD_PATH}/validatorinfo
             # ls -l ${BUILD_PATH}/
