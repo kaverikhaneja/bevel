@@ -11,8 +11,9 @@ metadata:
   namespace:
   item:
     name:
-  peer:
-    name:
+
+peer:
+  name:
 
 node:
   name:
