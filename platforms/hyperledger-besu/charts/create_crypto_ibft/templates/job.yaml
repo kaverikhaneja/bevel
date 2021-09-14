@@ -56,50 +56,50 @@ spec:
           command: ["/bin/bash", "-c"]
           args:
           - |-
-              validateVaultResponse () {
-                if echo ${2} | grep "errors"; then
-                  echo "ERROR: unable to retrieve ${1}: ${2}"
-                  exit 1
-                fi
-                if  [ "$3" == "LOOKUPSECRETRESPONSE" ];
-                then
-                  http_code=$(curl -sS -o /dev/null -w "%{http_code}" \
-                  --header "X-Vault-Token: ${VAULT_TOKEN}" \
-                  ${VAULT_ADDR}/v1/${1})
-                  curl_response=$?
-                  if test "$http_code" != "200" ; then
-                    echo "Http response code from Vault - $http_code and curl_response - $curl_response"
-                    if test "$curl_response" != "0"; then
-                      echo "Error: curl command failed with error code - $curl_response"
-                      exit 1
-                    fi
+            validateVaultResponse () {
+              if echo ${2} | grep "errors"; then
+                echo "ERROR: unable to retrieve ${1}: ${2}"
+                exit 1
+              fi
+              if  [ "$3" == "LOOKUPSECRETRESPONSE" ];
+              then
+                http_code=$(curl -sS -o /dev/null -w "%{http_code}" \
+                --header "X-Vault-Token: ${VAULT_TOKEN}" \
+                ${VAULT_ADDR}/v1/${1})
+                curl_response=$?
+                if test "$http_code" != "200" ; then
+                  echo "Http response code from Vault - $http_code and curl_response - $curl_response"
+                  if test "$curl_response" != "0"; then
+                    echo "Error: curl command failed with error code - $curl_response"
+                    exit 1
                   fi
                 fi
-              }
-
-              # Setting up the environment to check and get secrets from Vault
-              echo "Getting secrets from Vault server: ${VAULT_ADDR}"
-              KUBE_SA_TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
-              VAULT_TOKEN=$(curl -sS --request POST ${VAULT_ADDR}/v1/auth/${KUBERNETES_AUTH_PATH}/login -H "Content-Type: application/json" -d '{"role":"'"${VAULT_APP_ROLE}"'","jwt":"'"${KUBE_SA_TOKEN}"'"}' | jq -r 'if .errors then . else .auth.client_token end')
-              validateVaultResponse 'vault login token' "${VAULT_TOKEN}"
-              echo "Logged into Vault"
-              
-              mkdir -p ${MOUNT_PATH}
-
-              LOOKUP_SECRET_RESPONSE=$(curl -sS -H "X-Vault-Token: ${VAULT_TOKEN}" ${VAULT_ADDR}/v1/${VAULT_SECRET_PREFIX}/${ITEM_NAME}/data | jq -r 'if .errors then . else . end')
-              if echo ${LOOKUP_SECRET_RESPONSE} | grep "errors"
-              then
-                echo "Crypto absent in vault. Ignore error warning"
-                touch ${MOUNT_PATH}/absent.txt
-              else
-                validateVaultResponse "${VAULT_SECRET_PREFIX}" "${LOOKUP_SECRET_RESPONSE}" "LOOKUPSECRETRESPONSE"
-                echo "Crypto present in vault."
-                VAULT_RESULT=$(echo ${LOOKUP_SECRET_RESPONSE})
-                touch ${MOUNT_PATH}/present.txt
               fi
-              echo "Done checking for secrets in vault"
+            }
+
+            #Setting up the environment to check and get secrets from Vault
+            echo "Getting secrets from Vault server: ${VAULT_ADDR}"
+            KUBE_SA_TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
+            VAULT_TOKEN=$(curl -sS --request POST ${VAULT_ADDR}/v1/auth/${KUBERNETES_AUTH_PATH}/login -H "Content-Type: application/json" -d '{"role":"'"${VAULT_APP_ROLE}"'","jwt":"'"${KUBE_SA_TOKEN}"'"}' | jq -r 'if .errors then . else .auth.client_token end')
+            validateVaultResponse 'vault login token' "${VAULT_TOKEN}"
+            echo "Logged into Vault"
+              
+            mkdir -p ${MOUNT_PATH}
+
+            LOOKUP_SECRET_RESPONSE=$(curl -sS -H "X-Vault-Token: ${VAULT_TOKEN}" ${VAULT_ADDR}/v1/${VAULT_SECRET_PREFIX}/${ITEM_NAME}/data | jq -r 'if .errors then . else . end')
+            if echo ${LOOKUP_SECRET_RESPONSE} | grep "errors"
+            then
+              echo "Crypto absent in vault. Ignore error warning"
+              touch ${MOUNT_PATH}/absent.txt
+            else
+              validateVaultResponse "${VAULT_SECRET_PREFIX}" "${LOOKUP_SECRET_RESPONSE}" "LOOKUPSECRETRESPONSE"
+              echo "Crypto present in vault."
+              VAULT_RESULT=$(echo ${LOOKUP_SECRET_RESPONSE})
+              touch ${MOUNT_PATH}/present.txt
+            fi
+            echo "Done checking for secrets in vault"
         containers:
-        - name: create-crypto-ibft
+        - name: crypto-ibft
           image: {{ .Values.image.repository }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           volumeMounts:
