@@ -229,14 +229,14 @@ spec:
                 -H "Content-Type: application/json" \
                 -X POST \
                 -d '{"key":"'"$(cat ${DEST[i]}/key)"'"}' ${VAULT_ADDR}/v1/${VAULT_SECRET_PREFIX}/${node[i]}/data | jq -r 'if .errors then . else .auth.client_token end')
-
+                 echo "Saved the keys in vault"
               #Copy the crypto material to Vault
               LOOKUP_SECRET_RESPONSE=$(curl -sS -H "X-Vault-Token: ${VAULT_TOKEN}" \
                 -H "Content-Type: application/json" \
                 -X POST \
                 -d '{"key_pub":"'"$(cat ${DEST[i]}/key.pub)"'"}' ${VAULT_ADDR}/v1/${VAULT_SECRET_PREFIX}/${node[i]}/data | jq -r 'if .errors then . else .auth.client_token end')
+                 echo "Saved the keys in vault"
             done
-            echo "Saved the keys in vault"
 
             #create file to store addresses of validator nodes
             touch ${BUILD_PATH}/validatorinfo
@@ -272,7 +272,7 @@ spec:
                 -H "Content-Type: application/json" \
                 -X POST \
                 -d '{"nodeAddress_base64":"'"$(cat ${export_address})"'"}' ${VAULT_ADDR}/v1/${VAULT_SECRET_PREFIX}/${node[i]}/data | jq -r 'if .errors then . else .auth.client_token end')
-               echo "Copied the node addresses to vault"
+                 echo "Copied the node addresses to vault"
 
               # if [${ADD_NEW_ORG} == "True"]; then
               #   #generate the node public key for each peer of new organization
@@ -298,19 +298,15 @@ spec:
             touch ${BUILD_PATH}/crypto/newGenesis.json
             ls -l ${BUILD_PATH}/crypto
 
+            echo "Genesis created by besu:"
+            cat ${BUILD_PATH}/crypto/genesis.json
+
             #create the rlp encoded string and add it to extraData field in newGenesis.json
             cat ${BUILD_PATH}/validatorinfo | paste -sd "," -| awk '{print "["$0"]"}'> ${BUILD_PATH}/toEncode.json
             
-            echo "validator address json:"
-            cat ${BUILD_PATH}/toEncode.json
-            
-            echo "extra data:"
             besu rlp encode --from=${BUILD_PATH}/toEncode.json --to=${BUILD_PATH}/extraData
 
-            cat ${BUILD_PATH}/extraData
-
-            # echo "$(/opt/besu/bin/besu rlp encode --from=${BUILD_PATH}/toEncode.json)" > ${BUILD_PATH}/extraData
-            # jq '.extraData = $newVal' --arg newVal $(cat ${BUILD_PATH}/extraData) << cat ${BUILD_PATH}/crypto/genesis.json > ${BUILD_PATH}/crypto/newGenesis.json
+            jq '.extraData = $newVal' --arg newVal $(cat ${BUILD_PATH}/extraData) << cat ${BUILD_PATH}/crypto/genesis.json > ${BUILD_PATH}/crypto/newGenesis.json
             
             # touch ${BUILD_PATH}/crypto/genesis_base64
             # base64 ${BUILD_PATH}/crypto/newGenesis.json > genesis_base64
