@@ -48,4 +48,4 @@ charts:
   node_besu: node_besu
   vault_kubernetes_job: vault_kubernetes
   crypto_ibft_job: crypto_ibft
-  crypto_ibft: crypto_ibft
+  create_crypto_ibft: create_crypto_ibft
