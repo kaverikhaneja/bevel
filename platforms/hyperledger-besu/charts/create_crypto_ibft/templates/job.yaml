@@ -87,7 +87,7 @@ spec:
               
             mkdir -p ${MOUNT_PATH}
 
-            LOOKUP_SECRET_RESPONSE=$(curl -sS -H "X-Vault-Token: ${VAULT_TOKEN}" ${VAULT_ADDR}/v1/${VAULT_SECRET_PREFIX}/${ITEM_NAME}/data | jq -r 'if .errors then . else . end')
+            LOOKUP_SECRET_RESPONSE=$(curl -sS -H "X-Vault-Token: ${VAULT_TOKEN}" ${VAULT_ADDR}/v1/${VAULT_SECRET_PREFIX} | jq -r 'if .errors then . else . end')
             if echo ${LOOKUP_SECRET_RESPONSE} | grep "errors"
             then
               echo "Crypto absent in vault. Ignore error warning"
