@@ -271,7 +271,7 @@ spec:
               LOOKUP_SECRET_RESPONSE=$(curl -sS -H "X-Vault-Token: ${VAULT_TOKEN}" \
                 -H "Content-Type: application/json" \
                 -X POST \
-                -d '{"nodeAddress_base64":"'"$(cat ${export_address})"'"}' ${VAULT_ADDR}/v1/${VAULT_SECRET_PREFIX}/${nodeOrg[i]}/${node[i]}/data | jq -r 'if .errors then . else .auth.client_token end')
+                -d '{"nodeAddress_base64":"'"$(cat ${export_address})"'"}' ${VAULT_ADDR}/v1/${VAULT_SECRET_PREFIX}/${node[i]}/data | jq -r 'if .errors then . else .auth.client_token end')
                echo "Copied the node addresses to vault"
 
               # if [${ADD_NEW_ORG} == "True"]; then
@@ -286,7 +286,7 @@ spec:
               fi
             done
             
-            echo "Checking validator info array for ${nodeType[i]}:"
+            echo "Checking validator info array for validator:"
             cat ${BUILD_PATH}/validatorinfo
 
             #toEncode.json file is used by besu binary to generate the extra data information
@@ -302,7 +302,8 @@ spec:
             cat ${BUILD_PATH}/validatorinfo | paste -sd "," -| awk '{print "["$0"]"}'> ${BUILD_PATH}/toEncode.json
             echo "$(/opt/besu/bin/besu rlp encode --from=${BUILD_PATH}/toEncode.json)" > ${BUILD_PATH}/extraData
             jq '.extraData = $newVal' --arg newVal $(cat ${BUILD_PATH}/extraData) << cat ${BUILD_PATH}/crypto/genesis.json > ${BUILD_PATH}/crypto/newGenesis.json
-
+            
+            touch ${BUILD_PATH}/crypto/genesis_base64
             base64 ${BUILD_PATH}/crypto/newGenesis.json > genesis_base64
 
             echo "check genesis base64:"
