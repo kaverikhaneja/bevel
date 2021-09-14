@@ -77,35 +77,37 @@ spec:
                 fi
               fi
             }
+            echo "peer names= ${PEER_NAME}""
+            exit 0
 
-            #Setting up the environment to check and get secrets from Vault
-            echo "Getting secrets from Vault server: ${VAULT_ADDR}"
-            KUBE_SA_TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
-            VAULT_TOKEN=$(curl -sS --request POST ${VAULT_ADDR}/v1/auth/${KUBERNETES_AUTH_PATH}/login -H "Content-Type: application/json" -d '{"role":"'"${VAULT_APP_ROLE}"'","jwt":"'"${KUBE_SA_TOKEN}"'"}' | jq -r 'if .errors then . else .auth.client_token end')
-            validateVaultResponse 'vault login token' "${VAULT_TOKEN}"
-            echo "Logged into Vault"
+            # #Setting up the environment to check and get secrets from Vault
+            # echo "Getting secrets from Vault server: ${VAULT_ADDR}"
+            # KUBE_SA_TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
+            # VAULT_TOKEN=$(curl -sS --request POST ${VAULT_ADDR}/v1/auth/${KUBERNETES_AUTH_PATH}/login -H "Content-Type: application/json" -d '{"role":"'"${VAULT_APP_ROLE}"'","jwt":"'"${KUBE_SA_TOKEN}"'"}' | jq -r 'if .errors then . else .auth.client_token end')
+            # validateVaultResponse 'vault login token' "${VAULT_TOKEN}"
+            # echo "Logged into Vault"
               
-            mkdir -p ${MOUNT_PATH}
+            # mkdir -p ${MOUNT_PATH}
 
-            peer_names=""
-            peer_names="${peer_names} ${PEER_NAME}"
+            # peer_names=""
+            # peer_names="${peer_names} ${PEER_NAME}"
 
-            echo "These are the peers from network.yaml: ${peer_names}"
+            # echo "These are the peers from network.yaml: ${peer_names}"
 
-            for peer in ${peer_names}; do
-              LOOKUP_SECRET_RESPONSE=$(curl -sS -H "X-Vault-Token: ${VAULT_TOKEN}" ${VAULT_ADDR}/v1/${VAULT_SECRET_PREFIX}/${peer}/data | jq -r 'if .errors then . else . end')
-                if echo ${LOOKUP_SECRET_RESPONSE} | grep "errors";
-                then
-                  echo "Crypto absent in vault. Ignore error warning"
-                  touch ${MOUNT_PATH}/absent.txt
-                else
-                  validateVaultResponse "${VAULT_SECRET_PREFIX}" "${LOOKUP_SECRET_RESPONSE}" "LOOKUPSECRETRESPONSE"
-                  echo "Crypto present in vault."
-                  VAULT_RESULT=$(echo ${LOOKUP_SECRET_RESPONSE})
-                  touch ${MOUNT_PATH}/present.txt
-                fi
-            done
-            echo "Done checking for secrets in vault"
+            # for peer in ${peer_names}; do
+            #   LOOKUP_SECRET_RESPONSE=$(curl -sS -H "X-Vault-Token: ${VAULT_TOKEN}" ${VAULT_ADDR}/v1/${VAULT_SECRET_PREFIX}/${peer}/data | jq -r 'if .errors then . else . end')
+            #     if echo ${LOOKUP_SECRET_RESPONSE} | grep "errors";
+            #     then
+            #       echo "Crypto absent in vault. Ignore error warning"
+            #       touch ${MOUNT_PATH}/absent.txt
+            #     else
+            #       validateVaultResponse "${VAULT_SECRET_PREFIX}" "${LOOKUP_SECRET_RESPONSE}" "LOOKUPSECRETRESPONSE"
+            #       echo "Crypto present in vault."
+            #       VAULT_RESULT=$(echo ${LOOKUP_SECRET_RESPONSE})
+            #       touch ${MOUNT_PATH}/present.txt
+            #     fi
+            # done
+            # echo "Done checking for secrets in vault"
             tail -f /dev/null
         containers:
         - name: crypto-ibft
