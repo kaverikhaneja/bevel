@@ -192,6 +192,8 @@ spec:
             #Generate crypto for IBFT consensus
             echo "Generating crypto for IBFT consensus"
             /opt/besu/bin/besu operator generate-blockchain-config  --config-file=/genesis-raw-config/ibftConfigFile.json --to=${BUILD_PATH}/crypto  --private-key-file-name=key
+
+            cat ${BUILD_PATH}/crypto/genesis.json
             
             #Find folders created by besu in the above command, and rename them with node information
             declare -a FILE_PATH
@@ -209,7 +211,7 @@ spec:
               DEST+=(${BUILD_PATH}/crypto/${nodeOrg[i]}/${node[i]}/data)
             done
     
-            #rename the directories
+            #rename the folders
             for i in "${!folder[@]}";
             do
               mv ${FILE_PATH[i]} ${DEST[i]}
@@ -218,6 +220,7 @@ spec:
 
               #Save the keys to vault
               echo "Copying keys to vault..."
+
               #Setting up env to login vault
               KUBE_SA_TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
               VAULT_TOKEN=$(curl -sS --request POST ${VAULT_ADDR}/v1/auth/${KUBERNETES_AUTH_PATH}/login -H "Content-Type: application/json" -d '{"role":"'"${VAULT_APP_ROLE}"'","jwt":"'"${KUBE_SA_TOKEN}"'"}' | jq -r 'if .errors then . else .auth.client_token end')
@@ -229,13 +232,12 @@ spec:
                 -H "Content-Type: application/json" \
                 -X POST \
                 -d '{"key":"'"$(cat ${DEST[i]}/key)"'"}' ${VAULT_ADDR}/v1/${VAULT_SECRET_PREFIX}/${node[i]}/data | jq -r 'if .errors then . else .auth.client_token end')
-                 echo "Saved the keys in vault"
+
               #Copy the crypto material to Vault
               LOOKUP_SECRET_RESPONSE=$(curl -sS -H "X-Vault-Token: ${VAULT_TOKEN}" \
                 -H "Content-Type: application/json" \
                 -X POST \
                 -d '{"key_pub":"'"$(cat ${DEST[i]}/key.pub)"'"}' ${VAULT_ADDR}/v1/${VAULT_SECRET_PREFIX}/${node[i]}/data | jq -r 'if .errors then . else .auth.client_token end')
-                 echo "Saved the keys in vault"
             done
 
             #create file to store addresses of validator nodes
@@ -252,15 +254,13 @@ spec:
               echo "Check key files for ${node[i]}"
               ls -l /opt/besu/build/crypto/${nodeOrg[i]}/${node[i]}/data/
 
-              echo "Check nodeAddress content for ${node[i]}:"
-              cat ${export_address}
-              
               base64 ${export_address} > nodeAddress_base64
               echo "base 64 encoded node address for ${node[i]}:"
               cat nodeAddress_base64
 
               #Save the node addresses in vault
               echo "Copying node addresses to vault..."
+
               #Setting up env to login vault
               KUBE_SA_TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
               VAULT_TOKEN=$(curl -sS --request POST ${VAULT_ADDR}/v1/auth/${KUBERNETES_AUTH_PATH}/login -H "Content-Type: application/json" -d '{"role":"'"${VAULT_APP_ROLE}"'","jwt":"'"${KUBE_SA_TOKEN}"'"}' | jq -r 'if .errors then . else .auth.client_token end')
@@ -271,7 +271,7 @@ spec:
               LOOKUP_SECRET_RESPONSE=$(curl -sS -H "X-Vault-Token: ${VAULT_TOKEN}" \
                 -H "Content-Type: application/json" \
                 -X POST \
-                -d '{"nodeAddress_base64":"'"$(cat ${export_address})"'"}' ${VAULT_ADDR}/v1/${VAULT_SECRET_PREFIX}/${node[i]}/data | jq -r 'if .errors then . else .auth.client_token end')
+                -d '{"nodeAddress_base64":"$(cat ${export_address})"}' ${VAULT_ADDR}/v1/${VAULT_SECRET_PREFIX}/${node[i]}/data | jq -r 'if .errors then . else .auth.client_token end')
                  echo "Copied the node addresses to vault"
 
               # if [${ADD_NEW_ORG} == "True"]; then
@@ -297,9 +297,6 @@ spec:
             #New genesis file with extradata information
             touch ${BUILD_PATH}/crypto/newGenesis.json
             ls -l ${BUILD_PATH}/crypto
-
-            echo "Genesis created by besu:"
-            cat ${BUILD_PATH}/crypto/genesis.json
 
             #create the rlp encoded string and add it to extraData field in newGenesis.json
             cat ${BUILD_PATH}/validatorinfo | paste -sd "," -| awk '{print "["$0"]"}'> ${BUILD_PATH}/toEncode.json
