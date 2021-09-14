@@ -18,7 +18,6 @@ peer:
 node:
   name:
   org:
-  type:
 
 image:
   #Provide the image repository for the indy-key-mgmt container
