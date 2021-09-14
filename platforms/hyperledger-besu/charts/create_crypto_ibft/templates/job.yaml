@@ -53,9 +53,10 @@ spec:
               value: "/cryptocheck"
             - name: ITEM_NAME
               value: {{ .Values.metadata.item.name}}
-          command: ["/bin/bash", "-c"]
+          command: ["sh", "-c"]
           args:
           - |-
+            #!/usr/bin/env sh
             validateVaultResponse () {
               if echo ${2} | grep "errors"; then
                 echo "ERROR: unable to retrieve ${1}: ${2}"
@@ -126,10 +127,9 @@ spec:
               value: {{ .Values.vault.role }}
             - name: PEER_NAME
               value: {{ .Values.metadata.peer.name }}
-          command: ["sh", "-c"]
+          command: ["/bin/bash", "-c"]
           args:
           - |-
-            #!/usr/bin/env sh
             #installing jq
             curl -L -o /opt/besu/bin/jq https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64
             chmod +x /opt/besu/bin/jq
