@@ -300,33 +300,42 @@ spec:
 
             #create the rlp encoded string and add it to extraData field in newGenesis.json
             cat ${BUILD_PATH}/validatorinfo | paste -sd "," -| awk '{print "["$0"]"}'> ${BUILD_PATH}/toEncode.json
-            echo "$(/opt/besu/bin/besu rlp encode --from=${BUILD_PATH}/toEncode.json)" > ${BUILD_PATH}/extraData
-            jq '.extraData = $newVal' --arg newVal $(cat ${BUILD_PATH}/extraData) << cat ${BUILD_PATH}/crypto/genesis.json > ${BUILD_PATH}/crypto/newGenesis.json
             
-            touch ${BUILD_PATH}/crypto/genesis_base64
-            base64 ${BUILD_PATH}/crypto/newGenesis.json > genesis_base64
+            echo "validator address json:"
+            cat ${BUILD_PATH}/toEncode.json
+            
+            echo "extra data:"
+            besu rlp encode --from=${BUILD_PATH}/toEncode.json --to=${BUILD_PATH}/extraData
 
-            echo "check genesis base64:"
-            cat genesis_base64
+            cat ${BUILD_PATH}/extraData
+
+            # echo "$(/opt/besu/bin/besu rlp encode --from=${BUILD_PATH}/toEncode.json)" > ${BUILD_PATH}/extraData
+            # jq '.extraData = $newVal' --arg newVal $(cat ${BUILD_PATH}/extraData) << cat ${BUILD_PATH}/crypto/genesis.json > ${BUILD_PATH}/crypto/newGenesis.json
+            
+            # touch ${BUILD_PATH}/crypto/genesis_base64
+            # base64 ${BUILD_PATH}/crypto/newGenesis.json > genesis_base64
+
+            # echo "check genesis base64:"
+            # cat genesis_base64
 
             # #delete the keys directory
             # rm -r ${BUILD_PATH}/crypto/keys
             # ls -l  ${BUILD_PATH}/crypto/keys
         
             #Save the modified genesis file with extra data info to vault
-            echo "Copying the genesis_base64 to vault..."
+            # echo "Copying the genesis_base64 to vault..."
 
-            #Setting up env to login vault
-            KUBE_SA_TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
-            VAULT_TOKEN=$(curl -sS --request POST ${VAULT_ADDR}/v1/auth/${KUBERNETES_AUTH_PATH}/login -H "Content-Type: application/json" -d '{"role":"'"${VAULT_APP_ROLE}"'","jwt":"'"${KUBE_SA_TOKEN}"'"}' | jq -r 'if .errors then . else .auth.client_token end')
-            validateVaultResponse 'vault login token' "${VAULT_TOKEN}"
-            echo "Logged into Vault"
+            # #Setting up env to login vault
+            # KUBE_SA_TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
+            # VAULT_TOKEN=$(curl -sS --request POST ${VAULT_ADDR}/v1/auth/${KUBERNETES_AUTH_PATH}/login -H "Content-Type: application/json" -d '{"role":"'"${VAULT_APP_ROLE}"'","jwt":"'"${KUBE_SA_TOKEN}"'"}' | jq -r 'if .errors then . else .auth.client_token end')
+            # validateVaultResponse 'vault login token' "${VAULT_TOKEN}"
+            # echo "Logged into Vault"
 
-            #Copy genesis to vault
-            LOOKUP_SECRET_RESPONSE=$(curl -sS -H "X-Vault-Token: ${VAULT_TOKEN}" \
-              -H "Content-Type: application/json" \
-              -X POST \
-              -d '{"genesis":"'"$(cat ${BUILD_PATH}/crypto/genesis_base64)"'"}' ${VAULT_ADDR}/v1/${VAULT_SECRET_PREFIX}/genesis | jq -r 'if .errors then . else .auth.client_token end')
-              echo "Done copying genesis to the vault"
+            # #Copy genesis to vault
+            # LOOKUP_SECRET_RESPONSE=$(curl -sS -H "X-Vault-Token: ${VAULT_TOKEN}" \
+            #   -H "Content-Type: application/json" \
+            #   -X POST \
+            #   -d '{"genesis":"'"$(cat ${BUILD_PATH}/crypto/genesis_base64)"'"}' ${VAULT_ADDR}/v1/${VAULT_SECRET_PREFIX}/genesis | jq -r 'if .errors then . else .auth.client_token end')
+            #   echo "Done copying genesis to the vault"
         
        
