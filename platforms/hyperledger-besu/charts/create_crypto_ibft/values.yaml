@@ -51,6 +51,4 @@ vault:
   # Provide the vault path where the tm secrets are stored
   # Eg. secretprefix: secret/warehouse-bes/crypto/warehouse/tm
   ibftprefix: 
-
-# checks:
-#   add_new_org:
+  
