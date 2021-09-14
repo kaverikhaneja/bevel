@@ -114,8 +114,8 @@ spec:
               value: {{ .Values.node.org }}
             - name: NODE_TYPE
               value: {{ .Values.node.type }}
-            - name: ADD_NEW_ORG
-              value: {{ .Values.checks.add_new_org }}
+            # - name: ADD_NEW_ORG
+            #   value: {{ .Values.checks.add_new_org }}
             - name: COMPONENT_NAME
               value: {{ .Values.metadata.name }}
             - name: VAULT_SECRET_PREFIX
