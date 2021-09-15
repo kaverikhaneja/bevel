@@ -172,6 +172,12 @@ spec:
               exit 0
             fi
             
+            #Setting up env to login vault
+            KUBE_SA_TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
+            VAULT_TOKEN=$(curl -sS --request POST ${VAULT_ADDR}/v1/auth/${KUBERNETES_AUTH_PATH}/login -H "Content-Type: application/json" -d '{"role":"'"${VAULT_APP_ROLE}"'","jwt":"'"${KUBE_SA_TOKEN}"'"}' | jq -r 'if .errors then . else .auth.client_token end')
+            validateVaultResponse 'vault login token' "${VAULT_TOKEN}"
+            echo "Logged into Vault"
+
             #Create build folder to store crypto material
             BUILD_PATH="build"
             mkdir -p ${BUILD_PATH}
@@ -218,8 +224,8 @@ spec:
 
             for i in "${!node[@]}";
             do
-              mkdir -p ${BUILD_PATH}/crypto/${nodeOrg/${node[i]}
-              DEST+=(${BUILD_PATH}/crypto/${nodeOrg/${node[i]}/data)
+              mkdir -p ${BUILD_PATH}/crypto/${nodeOrg[i]}/${node[i]}
+              DEST+=(${BUILD_PATH}/crypto/${nodeOrg[i]}/${node[i]}/data)
               echo "Destination directories: ${DEST[i]}"
             done
     
@@ -230,62 +236,58 @@ spec:
               echo "Destination files:"
               ls -l ${DEST[i]}/
 
+              mkdir -p ${DEST[i]}/key-base64
+              base64 ${DEST[i]}/key > ${DEST[i]}/key-base64
+
+              mkdir -p ${DEST[i]}/key_pub-base64
+              base64 ${DEST[i]}/key.pub > ${DEST[i]}/key_pub-base64
+
               # #Save the keys to vault
-              # echo "Copying keys to vault..."
-
-              # #Setting up env to login vault
-              # KUBE_SA_TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
-              # VAULT_TOKEN=$(curl -sS --request POST ${VAULT_ADDR}/v1/auth/${KUBERNETES_AUTH_PATH}/login -H "Content-Type: application/json" -d '{"role":"'"${VAULT_APP_ROLE}"'","jwt":"'"${KUBE_SA_TOKEN}"'"}' | jq -r 'if .errors then . else .auth.client_token end')
-              # validateVaultResponse 'vault login token' "${VAULT_TOKEN}"
-              # echo "Logged into Vault"
-
-              # #Copy the crypto material to Vault
-              # LOOKUP_SECRET_RESPONSE=$(curl -sS -H "X-Vault-Token: ${VAULT_TOKEN}" \
-              #   -H "Content-Type: application/json" \
-              #   -X POST \
-              #   -d '{"key":"'"$(cat ${DEST[i]}/key)"'"}' ${VAULT_ADDR}/v1/${VAULT_SECRET_PREFIX}/${PEER_NAME}/data | jq -r 'if .errors then . else .auth.client_token end')
-
-              # #Copy the crypto material to Vault
-              # LOOKUP_SECRET_RESPONSE=$(curl -sS -H "X-Vault-Token: ${VAULT_TOKEN}" \
-              #   -H "Content-Type: application/json" \
-              #   -X POST \
-              #   -d '{"key_pub":"'"$(cat ${DEST[i]}/key.pub)"'"}' ${VAULT_ADDR}/v1/${VAULT_SECRET_PREFIX}/${PEER_NAME}/data | jq -r 'if .errors then . else .auth.client_token end')
-            done
-            exit 0
-
-            #create file to store addresses of validator nodes
-            touch ${BUILD_PATH}/validatorinfo
-            
-            #Generate node address for each node
-            for i in "${!node[@]}";
-            do
-              data_path=${BUILD_PATH}/crypto/${nodeOrg[i]}/${node[i]}/data
-              export_address=${data_path}/nodeAddress
-              echo "Generating node address..."
-              /opt/besu/bin/besu --data-path ${data_path} public-key export-address --to=${export_address}
-
-              echo "Check key files for ${node[i]}"
-              ls -l /opt/besu/build/crypto/${nodeOrg[i]}/${node[i]}/data/
-
-              base64 ${export_address} > nodeAddress_base64
-              echo "base 64 encoded node address for ${node[i]}:"
-              cat nodeAddress_base64
-
-              #Save the node addresses in vault
-              echo "Copying node addresses to vault..."
-
-              #Setting up env to login vault
-              KUBE_SA_TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
-              VAULT_TOKEN=$(curl -sS --request POST ${VAULT_ADDR}/v1/auth/${KUBERNETES_AUTH_PATH}/login -H "Content-Type: application/json" -d '{"role":"'"${VAULT_APP_ROLE}"'","jwt":"'"${KUBE_SA_TOKEN}"'"}' | jq -r 'if .errors then . else .auth.client_token end')
-              validateVaultResponse 'vault login token' "${VAULT_TOKEN}"
-              echo "Logged into Vault"
-
-              #Copy the crypto material to Vault
+              echo "Copying keys to vault..."
               LOOKUP_SECRET_RESPONSE=$(curl -sS -H "X-Vault-Token: ${VAULT_TOKEN}" \
                 -H "Content-Type: application/json" \
                 -X POST \
-                -d '{"nodeAddress_base64":"$(cat ${export_address})"}' ${VAULT_ADDR}/v1/${VAULT_SECRET_PREFIX}/${node[i]}/data | jq -r 'if .errors then . else .auth.client_token end')
-                 echo "Copied the node addresses to vault"
+                -d '{"key":"@${DEST[i]}/key-base64"}' ${VAULT_ADDR}/v1/${VAULT_SECRET_PREFIX}/${PEER_NAME}/data | jq -r 'if .errors then . else .auth.client_token end')
+
+              LOOKUP_SECRET_RESPONSE=$(curl -sS -H "X-Vault-Token: ${VAULT_TOKEN}" \
+                -H "Content-Type: application/json" \
+                -X POST \
+                -d '{"key_pub":"@${DEST[i]}/key_pub-base64"}' ${VAULT_ADDR}/v1/${VAULT_SECRET_PREFIX}/${PEER_NAME}/data | jq -r 'if .errors then . else .auth.client_token end')
+            done
+
+            # #create file to store addresses of validator nodes
+            # touch ${BUILD_PATH}/validatorinfo
+            
+            # #Generate node address for each node
+            # for i in "${!node[@]}";
+            # do
+            #   data_path=${BUILD_PATH}/crypto/${nodeOrg[i]}/${node[i]}/data
+            #   export_address=${data_path}/nodeAddress
+            #   echo "Generating node address..."
+            #   /opt/besu/bin/besu --data-path ${data_path} public-key export-address --to=${export_address}
+
+            #   echo "Check key files for ${node[i]}"
+            #   ls -l /opt/besu/build/crypto/${nodeOrg[i]}/${node[i]}/data/
+
+            #   base64 ${export_address} > nodeAddress_base64
+            #   echo "base 64 encoded node address for ${node[i]}:"
+            #   cat nodeAddress_base64
+
+            #   #Save the node addresses in vault
+            #   echo "Copying node addresses to vault..."
+
+            #   #Setting up env to login vault
+            #   KUBE_SA_TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
+            #   VAULT_TOKEN=$(curl -sS --request POST ${VAULT_ADDR}/v1/auth/${KUBERNETES_AUTH_PATH}/login -H "Content-Type: application/json" -d '{"role":"'"${VAULT_APP_ROLE}"'","jwt":"'"${KUBE_SA_TOKEN}"'"}' | jq -r 'if .errors then . else .auth.client_token end')
+            #   validateVaultResponse 'vault login token' "${VAULT_TOKEN}"
+            #   echo "Logged into Vault"
+
+            #   #Copy the crypto material to Vault
+            #   LOOKUP_SECRET_RESPONSE=$(curl -sS -H "X-Vault-Token: ${VAULT_TOKEN}" \
+            #     -H "Content-Type: application/json" \
+            #     -X POST \
+            #     -d '{"nodeAddress_base64":"$(cat ${export_address})"}' ${VAULT_ADDR}/v1/${VAULT_SECRET_PREFIX}/${node[i]}/data | jq -r 'if .errors then . else .auth.client_token end')
+            #      echo "Copied the node addresses to vault"
 
               # if [${ADD_NEW_ORG} == "True"]; then
               #   #generate the node public key for each peer of new organization
@@ -293,30 +295,30 @@ spec:
               #   /opt/besu/bin/besu --data-path ${data_path} public-key export --to=${export_key_path}
               # fi
 
-              #Create the validator address array
-              if [[ ${nodeType[i]} == "validator" ]]; then
-                echo "\"$(cat ${export_address})\"" >> ${BUILD_PATH}/validatorinfo
-              fi
-            done
+            #   #Create the validator address array
+            #   if [[ ${nodeType[i]} == "validator" ]]; then
+            #     echo "\"$(cat ${export_address})\"" >> ${BUILD_PATH}/validatorinfo
+            #   fi
+            # done
             
-            echo "Checking validator info array for validator:"
-            cat ${BUILD_PATH}/validatorinfo
+            # echo "Checking validator info array for validator:"
+            # cat ${BUILD_PATH}/validatorinfo
 
-            #toEncode.json file is used by besu binary to generate the extra data information
-            touch ${BUILD_PATH}/toEncode.json
-            touch ${BUILD_PATH}/extraData
-            ls -l ${BUILD_PATH}/
+            # #toEncode.json file is used by besu binary to generate the extra data information
+            # touch ${BUILD_PATH}/toEncode.json
+            # touch ${BUILD_PATH}/extraData
+            # ls -l ${BUILD_PATH}/
 
-            #New genesis file with extradata information
-            touch ${BUILD_PATH}/crypto/newGenesis.json
-            ls -l ${BUILD_PATH}/crypto
+            # #New genesis file with extradata information
+            # touch ${BUILD_PATH}/crypto/newGenesis.json
+            # ls -l ${BUILD_PATH}/crypto
 
-            #create the rlp encoded string and add it to extraData field in newGenesis.json
-            cat ${BUILD_PATH}/validatorinfo | paste -sd "," -| awk '{print "["$0"]"}'> ${BUILD_PATH}/toEncode.json
+            # #create the rlp encoded string and add it to extraData field in newGenesis.json
+            # cat ${BUILD_PATH}/validatorinfo | paste -sd "," -| awk '{print "["$0"]"}'> ${BUILD_PATH}/toEncode.json
             
-            besu rlp encode --from=${BUILD_PATH}/toEncode.json --to=${BUILD_PATH}/extraData
+            # besu rlp encode --from=${BUILD_PATH}/toEncode.json --to=${BUILD_PATH}/extraData
 
-            jq '.extraData = $newVal' --arg newVal $(cat ${BUILD_PATH}/extraData) << cat ${BUILD_PATH}/crypto/genesis.json > ${BUILD_PATH}/crypto/newGenesis.json
+            # jq '.extraData = $newVal' --arg newVal $(cat ${BUILD_PATH}/extraData) << cat ${BUILD_PATH}/crypto/genesis.json > ${BUILD_PATH}/crypto/newGenesis.json
             
             # touch ${BUILD_PATH}/crypto/genesis_base64
             # base64 ${BUILD_PATH}/crypto/newGenesis.json > genesis_base64
