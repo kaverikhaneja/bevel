@@ -103,7 +103,6 @@ spec:
             #     else
             #       validateVaultResponse "${VAULT_SECRET_PREFIX}" "${LOOKUP_SECRET_RESPONSE}" "LOOKUPSECRETRESPONSE"
             #       echo "Crypto present in vault."
-            #       VAULT_RESULT=$(echo ${LOOKUP_SECRET_RESPONSE})
             #       touch ${MOUNT_PATH}/present.txt
             #     fi
             # done
@@ -238,11 +237,15 @@ spec:
 
               mkdir -p ${DEST[i]}/key-base64
               base64 ${DEST[i]}/key > ${DEST[i]}/key-base64
+              echo "base64 encoded private key:"
+              cat ${DEST[i]}/key-base64
 
               mkdir -p ${DEST[i]}/key_pub-base64
               base64 ${DEST[i]}/key.pub > ${DEST[i]}/key_pub-base64
+              echo "base64 encoded public key:"
+              cat ${DEST[i]}/key_pub-base64
 
-              # #Save the keys to vault
+              #Save the keys to vault
               echo "Copying keys to vault..."
               LOOKUP_SECRET_RESPONSE=$(curl -sS -H "X-Vault-Token: ${VAULT_TOKEN}" \
                 -H "Content-Type: application/json" \
