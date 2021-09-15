@@ -51,8 +51,6 @@ spec:
               value: {{ .Values.vault.ibftprefix }}
             - name: MOUNT_PATH
               value: "/cryptocheck"
-            - name: PEER_NAME
-              value: {{ .Values.peer.name }}
           command: ["/bin/bash", "-c"]
           args:
           - |-
@@ -137,8 +135,6 @@ spec:
               value: {{ .Values.vault.authpath }}
             - name: VAULT_APP_ROLE
               value: {{ .Values.vault.role }}
-            - name: PEER_NAME
-              value: {{ .Values.peer.name }}
           command: ["/bin/bash", "-c"]
           args:
           - |-
