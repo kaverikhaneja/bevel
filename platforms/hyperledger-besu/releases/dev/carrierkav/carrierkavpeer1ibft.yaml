@@ -1,0 +1,87 @@
+apiVersion: helm.fluxcd.io/v1
+kind: HelmRelease
+metadata:
+  name: carrierkavpeer1ibft
+  namespace: carrierkav-bes
+  annotations:
+    flux.weave.works/automated: "false"
+spec:
+  releaseName: carrierkavpeer1ibft
+  chart:
+    git: https://github.com/kaverikhaneja/blockchain-automation-framework.git
+    ref: besu-privateTx
+    path: platforms/hyperledger-besu/charts/node_orion 
+  values:
+    replicaCount: 1
+
+    healthcheck:
+      readinessthreshold: 100
+      readinesscheckinterval: 5
+
+    staticnodes:
+      - "enode://3a3870674875cd2f17c13817f6c6ffbbbc61f343d2bfca84a97b6da3c19ccb5dc866156a461e873f45dc6a8de4fcb8b2ec77a96a0d4e5c2b9fb1e135b3fedc9e@validator1.bes.dev2.aws.blockchaincloudpoc-develop.com:15041"
+      - "enode://d431c45834e94f23073f861a5e5872374849fb1e9053b9f107512a80d257bdcd241ff5c159f4730f14590e35ee66c9bc36752a733816bc3ba1e82dd325706965@validator2.bes.dev2.aws.blockchaincloudpoc-develop.com:15043"
+      - "enode://2fccdec60ee827cd83d3d738535ebd7a2d98a3b2dbe88b727b7df5da02791e6ca0b13900f02767d8040159776c439c11682eea1494ac953705fbbae9ccf4f8fa@validator3.bes.dev2.aws.blockchaincloudpoc-develop.com:15045"
+      - "enode://bc28a9c96249e1cdc0f5c77a9467f10855d4ca122881c45e479134b19dd6ce04a4d026939d1f40e16551c131b829b6e1a3a6faedda6e0e94bfaca37fdda5f993@validator4.bes.dev2.aws.blockchaincloudpoc-develop.com:15047"
+      - "enode://3f50987fac2a90e5af0f02a9d576773959b1864b177199610308e14b700432a22b436e53ff96d971ab8683e3927b083e430aaee5826ed29ce2642e27c77e5445@peer1.bes.dev2.aws.blockchaincloudpoc-develop.com:15049"
+      - "enode://6baacd6442e0c0a6576711c643c5ad8e5d54cf191e9d6c4dff53d2090bd234927a4856c80dc7b213710d1df28783c66abf8b140f606583a84f8f038a9ed56a98@peer2.bes.dev2.aws.blockchaincloudpoc-develop.com:15062"
+      - "enode://87fb7458d3d500821b97caa0ffcc56ad2b8eb52edb4d148a4337cfc9289c05a0ffb71252a11034c3040bd44fe5b6a50a11f5bdbb4cb578398706df42615e5c6b@peer3.bes.dev2.aws.blockchaincloudpoc-develop.com:15065"
+      - "enode://5ab1dde684ebd897dff144ed6a11913ac9349d0d35b477e1111ae6be7a8bf7bfdc94a9716281c222aaa7572969b7460f6ff6a66b2c8f0b0e5391660d47c01f7c@peer4.bes.dev2.aws.blockchaincloudpoc-develop.com:15068"
+
+    metadata:
+      namespace: carrierkav-bes
+      labels:
+
+    liveliness_check:
+      enabled: false
+ 
+    proxy:
+      provider: ambassador
+      external_url: carrierkav.bes.dev2.aws.blockchaincloudpoc-develop.com
+      p2p: 15049
+      rpc: 15050
+      tmport: 15061
+
+    images:
+      node: hyperledger/besu:21.1.1
+      alpineutils: hyperledgerlabs/alpine-utils:1.0
+      orion: pegasyseng/orion:21.1.1
+
+    node:
+      name: peer1
+      consensus: ibft
+      subject: O=Carrier,OU=Carrier,L=51.50/-0.13/London,C=GB
+      mountPath: /opt/besu/data
+      servicetype: ClusterIP
+      imagePullSecret: regcred
+      ports:
+        p2p: 30303
+        rpc: 8545
+        ws: 8546
+
+    orion:
+      name: orion
+      tls: True
+      confdir: /etc/config
+      url: "https://carrierkav.bes.dev2.aws.blockchaincloudpoc-develop.com"
+      nodelist: "\"https://peer2.bes.dev2.aws.blockchaincloudpoc-develop.com:15064\",\"https://peer3.bes.dev2.aws.blockchaincloudpoc-develop.com:15067\",\"https://peer4.bes.dev2.aws.blockchaincloudpoc-develop.com:15070\""
+      trust: ca-or-tofu
+      ports:
+        nodeport: 8888
+        clientport: 8080
+
+    storage:
+      storageclassname: awsstorageclass
+      storagesize: 1Gi
+
+    vault:
+      address: http://vault.internal.dev2.aws.blockchaincloudpoc-develop.com:20001
+      secretprefix: secretsv2/data/carrierkav-bes/crypto/peer1
+      serviceaccountname: vault-auth
+      keyname: data
+      tmdir: tm
+      tlsdir: tls
+      role: vault-role
+      authpath: besucarrierkav
+
+    genesis: ewogICJjb25maWciOiB7CiAgICAiY2hhaW5JZCI6IDIwMTgsCiAgICAiY29uc3RhbnRpbm9wbGVmaXhibG9jayI6IDAsCiAgICAiY29udHJhY3RTaXplTGltaXQiOiAyMTQ3NDgzNjQ3LAogICAgImliZnQyIjogewogICAgICAiYmxvY2twZXJpb2RzZWNvbmRzIjogMiwKICAgICAgImVwb2NobGVuZ3RoIjogMzAwMDAsCiAgICAgICJyZXF1ZXN0dGltZW91dHNlY29uZHMiOiAxMAogICAgfQogIH0sCiAgIm5vbmNlIjogIjB4MCIsCiAgInRpbWVzdGFtcCI6ICIweDU4ZWU0MGJhIiwKICAiZ2FzTGltaXQiOiAiMHgxZmZmZmZmZmZmZmZmZiIsCiAgImRpZmZpY3VsdHkiOiAiMHgxIiwKICAiZXh0cmFEYXRhIjogIjB4Zjg3ZWEwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMGY4NTQ5NGZlNGFmMmMxMWFjMTg4NTVmNmQ3YTM0ZDhiMGVkNDgxZjk0Y2VjYjY5NDZhNzFmMGI2NzExMDZhYTRlOWNjNGM4YWExMWNkOGNmMmMxNzA3ODg5NDk0OGQ0YjhmMmE4NTUyOWY1ZDU1YzBiM2FhYWU5MzFkMjk1NjcyNGE5NGFhYTlkOWYzNDRjYjA0YmYyNjE0ZmI0NmRhNTQyNDM1MTY2Mzk4MGQ4MDg0MDAwMDAwMDBjMCIKfQ==
