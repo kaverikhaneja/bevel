@@ -1,0 +1,84 @@
+apiVersion: helm.fluxcd.io/v1
+kind: HelmRelease
+metadata:
+  name: supplychainkavvalidator3ibft
+  namespace: supplychainkav-bes
+  annotations:
+    flux.weave.works/automated: "false"
+spec:
+  releaseName: supplychainkavvalidator3ibft
+  chart:
+    git: https://github.com/kaverikhaneja/blockchain-automation-framework.git
+    ref: besu-privateTx
+    path: platforms/hyperledger-besu/charts/node_validator 
+  values:
+    replicaCount: 1
+
+    healthcheck:
+      readinessthreshold: 100
+      readinesscheckinterval: 5
+
+    staticnodes:
+      - "enode://284f7babb245a739c2488f1c7cc34f862e64e99855e9f09f6623797ab820a0b7c0a3b90e0e4c98c79780ded01780741b5aac4f0a5016a0702d5bdfc4267eab9b@validator1.bes.dev2.aws.blockchaincloudpoc-develop.com:15041"
+      
+      - "enode://cc5738ca0d3f991910e1544e0f59c9cb860153ba85d3f6ead88e673ef5a7a918a5998d1ecfbbb840685d98f2f5af45f1a3a7092e9acd30391d65b3b344d3202a@validator2.bes.dev2.aws.blockchaincloudpoc-develop.com:15043"
+      
+      - "enode://ef5e6a2a0260095ed120f6239d89f7d8e1d7408e632b8c1335deb230e929357d2d87a926bc511a3cf04ccabbc0653dd6aad3603852e446850c8ae26c200c5b1e@validator3.bes.dev2.aws.blockchaincloudpoc-develop.com:15045"
+      
+      - "enode://848f9bbbaf00f27a1fb1112193270aa4951a1011ff70db6195cc46c4aba6f3f80065577b09f709d80e543f4e4666281d1b554255656ed1b208f5c26ccea6a5a6@validator4.bes.dev2.aws.blockchaincloudpoc-develop.com:15047"
+      
+      - "enode://8ffc855f3d6ee7dd72b49b2a718d8a6781247db621f37eca6947ebb488097f97ebd6ba2af39c995c87eefdf56b57051fec62d7d514702a308cee660e371a352e@peer1.bes.dev2.aws.blockchaincloudpoc-develop.com:15049"
+      
+      - "enode://c99327e71eefc4ff31b2dd576b2bfcf702e1c55b9e37e4232e15d71746d4e2d84482504c3c603d6ce9e89cd108742b1d25a1749d7db19b1156aa3b5058faf836@peer2.bes.dev2.aws.blockchaincloudpoc-develop.com:15062"
+      
+      - "enode://2211d3b3dd876aa071b2b2756e21e30393a71ac706b9e66b067ce51c2071b52e002875bbc1b934ccb13df97d25a49eeaaf5881b64ada9a254a4e35cce4a65521@peer3.bes.dev2.aws.blockchaincloudpoc-develop.com:15065"
+      
+      - "enode://1a0ce930836ab56d326acbb968e4046577658848198ec71ede12e1faf0ad431f1b6295df6f3fb14b694abb2d8cc57e9400ffc3b9d80b91b673060246497220c9@peer4.bes.dev2.aws.blockchaincloudpoc-develop.com:15068"
+      
+
+    metadata:
+      namespace: supplychainkav-bes
+      labels:
+
+    ambassador:
+      external_url_suffix: bes.dev2.aws.blockchaincloudpoc-develop.com
+
+    liveliness_check:
+      enabled: false
+ 
+    proxy:
+      provider: ambassador
+      external_url: supplychainkav.bes.dev2.aws.blockchaincloudpoc-develop.com
+      p2p: 15045
+      rpc: 15046
+
+    images:
+      node: hyperledger/besu:21.1.1
+      alpineutils: hyperledgerlabs/alpine-utils:1.0
+
+    node:
+      name: validator3
+      tls: True
+      consensus: ibft
+      mountPath: /opt/besu/data
+      servicetype: ClusterIP
+      imagePullSecret: regcred
+      ports:
+        p2p: 30303
+        rpc: 8545
+        ws: 8546
+
+    storage:
+      storageclassname: awsstorageclass
+      storagesize: 1Gi
+
+    vault:
+      address: http://vault.internal.dev2.aws.blockchaincloudpoc-develop.com:20001
+      secretprefix: secretsv2/data/supplychainkav-bes/crypto/validator3
+      serviceaccountname: vault-auth
+      keyname: data
+      tlsdir: tls
+      role: vault-role
+      authpath: besusupplychainkav
+
+    genesis: ewogICJjb25maWciOiB7CiAgICAiY2hhaW5JZCI6IDIwMTgsCiAgICAiY29uc3RhbnRpbm9wbGVmaXhibG9jayI6IDAsCiAgICAiY29udHJhY3RTaXplTGltaXQiOiAyMTQ3NDgzNjQ3LAogICAgImliZnQyIjogewogICAgICAiYmxvY2twZXJpb2RzZWNvbmRzIjogMiwKICAgICAgImVwb2NobGVuZ3RoIjogMzAwMDAsCiAgICAgICJyZXF1ZXN0dGltZW91dHNlY29uZHMiOiAxMAogICAgfQogIH0sCiAgIm5vbmNlIjogIjB4MCIsCiAgInRpbWVzdGFtcCI6ICIweDU4ZWU0MGJhIiwKICAiZ2FzTGltaXQiOiAiMHgxZmZmZmZmZmZmZmZmZiIsCiAgImRpZmZpY3VsdHkiOiAiMHgxIiwKICAiZXh0cmFEYXRhIjogIjB4Zjg3ZWEwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMGY4NTQ5NDIwMGI0MzNiMTQzMDQ5OTVhNTJhYjAwOGMzNjYwMzJiZGMzMzc0MmM5NDQzODU5ZmE3OWM5OThmZWFjYmIwYWYxNDVjYTVkYTgyNGUxYzY5NjE5NDNhZThhYWNhZmRhNTliMDEyODRlYTBkZjdlN2FhYzdiYTlhYzE2MDg5NGU5ZTM3Mjg3MTRiNGZkNTUzZjIwNWNlZWRhMmUwMmM5NzIyZDRhMGM4MDg0MDAwMDAwMDBjMCIKfQ==
