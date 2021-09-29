@@ -1,0 +1,78 @@
+apiVersion: helm.fluxcd.io/v1
+kind: HelmRelease
+metadata:
+  name: carrierkavpeer1ibft
+  namespace: carrierkav-bes
+  annotations:
+    flux.weave.works/automated: "false"
+spec:
+  releaseName: carrierkavpeer1ibft
+  chart:
+    git: https://github.com/kaverikhaneja/blockchain-automation-framework.git
+    ref: besu-privateTx
+    path: platforms/hyperledger-besu/charts/node_besu
+  values:
+    metadata:
+      namespace: carrierkav-bes
+      labels:
+    replicaCount: 1
+    staticnodes:
+      - "enode://b121f0de35e825076940ee87bde09749b1d2f79eee8de8eeba4ca6a826ab035a00ea59fc8dfda408dd791a01090e9121d57230a3d1da7c644c9fcb605f5abe87@validator1.bes.dev2.aws.blockchaincloudpoc-develop.com:15041"
+      - "enode://f53282703b192d6e0cd4e5de981d380b5652fc8a85989d73664e95080216e62921dec20e33f26c7e05734f3bb3c24229383fb0abe7f1009443a9bfd1a0184e2d@validator2.bes.dev2.aws.blockchaincloudpoc-develop.com:15043"
+      - "enode://f4cfb72fd4dfcbc65507af7ed196afefa0fc4c7749d7b132e38ab0f6d06a5fc3fb65658a1b2e4cb4dac8342ad091999a2cf2ebff1ddc940ea12c4c35ac8499b4@validator3.bes.dev2.aws.blockchaincloudpoc-develop.com:15045"
+      - "enode://c5a956a1813f8ba95dfb22d260db5bb5b67dfa0137cdda9b04a797aafc720d423a5330078d3e26e2cce0ce8e5a53b3b883f4c1c67292d759c3aa8f3a3d70033c@validator4.bes.dev2.aws.blockchaincloudpoc-develop.com:15047"
+      - "enode://ab86769c13a2e3811debbcf6da444a982baf294faf6996a8f009713bb006fa8c4a42906a5d012209893fef9b68a6e43fa74867010b74704a7dc41f5290f02ab0@peer1.bes.dev2.aws.blockchaincloudpoc-develop.com:15049"
+      - "enode://aa6d947659f0514ef5cf077305e12828933fb48875f6680f503563fa73fd3093fbde855aa33c1a30b2ab4af89b220eb7aa8e7fc06cafe2fcb947b564095a803c@peer2.bes.dev2.aws.blockchaincloudpoc-develop.com:15062"
+      - "enode://ef8b4f7eb8ac720b3990bbfad0dae02723dfbb7c14b3e32f219e936625e85c16dddbce6a9afbbc694b7e070ce70fb83b867463c45b7643b25f0ea7e9a8e80356@peer3.bes.dev2.aws.blockchaincloudpoc-develop.com:15065"
+      - "enode://4889d1cedf9a2f976ab183e1a80faed5bf8f997daa9add44f8e7b72b6f69aea9cd2f57a3791a460ce2b5ca4e2f13e83b210842f56216046d6d4dc71c6bf46993@peer4.bes.dev2.aws.blockchaincloudpoc-develop.com:15068"
+   
+
+    liveliness_check:
+      enabled: false
+    healthcheck:
+      readinessthreshold: 100
+      readinesscheckinterval: 5
+ 
+    proxy:
+      provider: ambassador
+      external_url: carrierkav.bes.dev2.aws.blockchaincloudpoc-develop.com
+      p2p: 15049
+      rpc: 15050
+
+    images:
+      node: hyperledger/besu:21.1.1
+      alpineutils: hyperledgerlabs/alpine-utils:1.0     
+
+    node:
+      name: peer1
+      consensus: ibft
+      subject: O=Carrier,OU=Carrier,L=51.50/-0.13/London,C=GB
+      mountPath: /opt/besu/data
+      servicetype: ClusterIP
+      imagePullSecret: regcred
+      ports:
+        p2p: 30303
+        rpc: 8545
+        ws: 8546
+
+    tm:
+      type: tessera
+      tls: True
+      
+      url: "https://peer1-tessera.carrierkav-bes:8888"
+      
+    storage:
+      storageclassname: awsstorageclass
+      storagesize: 1Gi
+
+    vault:
+      address: http://vault.internal.dev2.aws.blockchaincloudpoc-develop.com:20001
+      secretprefix: secretsv2/data/carrierkav-bes/crypto/peer1
+      serviceaccountname: vault-auth
+      keyname: data
+      tmdir: tm
+      tlsdir: tls
+      role: vault-role
+      authpath: besucarrierkav
+
+    genesis: ewogICJjb25maWciOiB7CiAgICAiY2hhaW5JZCI6IDIwMTgsCiAgICAiY29uc3RhbnRpbm9wbGVmaXhibG9jayI6IDAsCiAgICAiY29udHJhY3RTaXplTGltaXQiOiAyMTQ3NDgzNjQ3LAogICAgImliZnQyIjogewogICAgICAiYmxvY2twZXJpb2RzZWNvbmRzIjogMiwKICAgICAgImVwb2NobGVuZ3RoIjogMzAwMDAsCiAgICAgICJyZXF1ZXN0dGltZW91dHNlY29uZHMiOiAxMAogICAgfQogIH0sCiAgIm5vbmNlIjogIjB4MCIsCiAgInRpbWVzdGFtcCI6ICIweDU4ZWU0MGJhIiwKICAiZ2FzTGltaXQiOiAiMHgxZmZmZmZmZmZmZmZmZiIsCiAgImRpZmZpY3VsdHkiOiAiMHgxIiwKICAiZXh0cmFEYXRhIjogIjB4Zjg3ZWEwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMGY4NTQ5NDFjOTRhMzEyZDFkODU3YTgzNzFmMjA3ODE1NGFkMWU0YjgxNTE1MWQ5NGE5NDI0ZjYxZmRmODI3MTljOWUzZjFmOWQ4Mjg1ZTcxN2Y3MWVjNjc5NDBmMTEyZjFjZDFiNTQxNGQ2NzllNWVhY2M2ZTUyZjYxMmQ0MGQ5YjM5NDNjOGRiZDI0ODVkY2Y4Y2IzN2FiM2VjMjZkNThmODY0Zjk0Y2FiY2I4MDg0MDAwMDAwMDBjMCIKfQ==
