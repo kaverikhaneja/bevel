@@ -20,7 +20,10 @@ args['privateFor'].split(',').forEach(item => privateFor.push(item));
 const numberOfIterations = args['numberOfIteration'] | 100;
 
 args['v'] && console.log(`Creating a web3 provider.......`);
-const web3 = new EEAClient(new Web3(`${url}`), `${chainId}`);// Creating a provider
+// const web3 = new EEAClient(new Web3(`${url}`), `${chainId}`);// Creating a provider
+const chainId = 2018;
+const web3 = new Web3(clientUrl);
+const web3quorum = new Web3Quorum(web3, chainId);
 var transactionHash = "";  // to store transaction hash to get the transaction receipt 
 var contractAddress = "";
 
