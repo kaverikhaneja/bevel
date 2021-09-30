@@ -21,7 +21,6 @@ const numberOfIterations = args['numberOfIteration'] | 100;
 
 args['v'] && console.log(`Creating a web3 provider.......`);
 // const web3 = new EEAClient(new Web3(`${url}`), `${chainId}`);// Creating a provider
-const chainId = 2018;
 const web3 = new Web3(clientUrl);
 const web3quorum = new Web3Quorum(web3, chainId);
 var transactionHash = "";  // to store transaction hash to get the transaction receipt 
@@ -64,7 +63,7 @@ const deploySmartContract = async (contractOptions) => {
   args['v'] && console.log(`trying to create a new account from private key`);
   const newAccount = await web3.eth.accounts.privateKeyToAccount(`0x${privateKey}`) // Creating new ethereum account from the private key
   args['v'] && console.log(`Deploying the smartcontract......`);
-  return web3.eea.sendRawTransaction(contractOptions); // deploy smartcontract with contractoptions
+  return web3quorum.priv.generateAndSendRawTransaction(contractOptions); // deploy smartcontract with contractoptions
 }
 
 
