@@ -1,6 +1,7 @@
 const path = require("path");
 const Web3 = require('web3'); // Importing web3.js library
-const EEAClient = require("web3-eea"); // Web3.js wrapper
+// const EEAClient = require("web3-eea"); // Web3.js wrapper
+const Web3Quorum = require('web3js-quorum');
 const fs = require('fs-extra'); // Importing for writing a file
 const contract = require('./compile'); //Importing the function to compile smart contract
 const minimist = require('minimist'); // Import the library for the arguments
