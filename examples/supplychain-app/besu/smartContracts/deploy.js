@@ -36,6 +36,9 @@ const deploy = async () => {
     privateFor: privateFor,
     privateKey: `${privateKey}`
   };
+  args['v'] && console.log(orionPublicKey);
+  args['v'] && console.log(privateFor);
+  args['v'] && console.log(privateKey);
   args['v'] && console.log(`Created the contract options`);
   await deploySmartContract(contractOptions)
     .then(hash => {
