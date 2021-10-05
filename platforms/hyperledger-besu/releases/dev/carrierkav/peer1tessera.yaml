@@ -1,0 +1,68 @@
+apiVersion: helm.fluxcd.io/v1
+kind: HelmRelease
+metadata:
+  name: peer1tessera
+  namespace: carrierkav-bes
+  annotations:
+    flux.weave.works/automated: "false"
+spec:
+  releaseName: peer1tessera
+  helmVersion: v3
+  chart:
+    git: https://github.com/kaverikhaneja/blockchain-automation-framework.git
+    ref: besu-privateTx
+    path: platforms/hyperledger-besu/charts/node_tessera  
+  values:
+    replicaCount: 1
+    metadata:
+      namespace: carrierkav-bes
+      labels:
+    images:      
+      alpineutils: index.docker.io/hyperledgerlabs/alpine-utils:1.0
+      tessera: quorumengineering/tessera:21.1.1
+      busybox: busybox
+      mysql: mysql/mysql-server:5.7
+      imagePullSecret: regcred
+    tessera:
+      name: peer1-tessera
+      dbname: demodb      
+      dburl: "jdbc:mysql://peer1-tessera:3306/demodb"
+      dbusername: demouser
+      tls: "STRICT"
+ 
+      url: "https://peer1.bes.dev2.aws.blockchaincloudpoc-develop.com:443"
+      
+      clienturl: "https://peer1-tessera:8888"
+      othernodes:
+        - url: https://peer1.bes.dev2.aws.blockchaincloudpoc-develop.com
+        - url: https://peer2.bes.dev2.aws.blockchaincloudpoc-develop.com
+        - url: https://peer3.bes.dev2.aws.blockchaincloudpoc-develop.com
+        - url: https://peer4.bes.dev2.aws.blockchaincloudpoc-develop.com
+      trust: "CA_OR_TOFU"
+      
+      
+      servicetype: ClusterIP
+      ports:
+        tm: 443        
+        db: 3306
+        client: 8888
+      mountPath: /etc/tessera/data
+      ambassadorSecret: peer1-ambassador-certs
+    vault:
+      address: http://vault.internal.dev2.aws.blockchaincloudpoc-develop.com:20001
+      secretprefix: secretsv2/data/carrierkav-bes/crypto/peer1
+      serviceaccountname: vault-auth
+      keyname: credentials
+      tm_keyname: tm
+      tlsdir: tls
+      role: vault-role
+      authpath: besucarrierkav
+ 
+    proxy:
+      provider: "ambassador"
+      external_url: peer1.bes.dev2.aws.blockchaincloudpoc-develop.com
+      portTM: 443      
+    storage:
+      storageclassname: awsstorageclass
+      storagesize: 1Gi
+      dbstorage: 1Gi
