@@ -12,7 +12,7 @@ const url = args['url'];  // url of RPC port of besu node
 const contractPath = args['path']; // path to the contract directory
 const contractEntryPoint = args['entryPoint']; // Smart contract entrypoint eg Main.sol
 const contractName = args['contractName']; // Smart Contract Class Nameconst initArguments = process.env.INITARGUMENTS | " ";
-const chainId = args['chainId'];
+// const chainId = args['chainId'];
 const orionPublicKey = args['orionKey'];
 const privateKey = args['privateKey'];
 const privateFor = [];
@@ -70,9 +70,9 @@ const deploy = async () => {
 }
 
 const deploySmartContract = async (contractOptions) => {
-  args['v'] && console.log(`trying to create a new account from private key`);
-  const newAccount = await web3.eth.accounts.privateKeyToAccount(`0x${privateKey}`) // Creating new ethereum account from the private key
-  args['v'] && console.log(newAccount);
+  // args['v'] && console.log(`trying to create a new account from private key`);
+  // const newAccount = await web3.eth.accounts.privateKeyToAccount(`0x${privateKey}`) // Creating new ethereum account from the private key
+  // args['v'] && console.log(newAccount);
   args['v'] && console.log(`Deploying the smartcontract......`);
   return web3.priv.generateAndSendRawTransaction(contractOptions); // deploy smartcontract with contractoptions
 }
