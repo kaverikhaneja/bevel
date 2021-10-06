@@ -230,7 +230,7 @@
   - include_role:
       name: "create/besu/express_api"
     vars:
-      component_name: "express_api"
+      # component_name: "express_api"
       component_ns: "{{ organization_data.name | lower }}-bes"
       component_type: "{{ organization_data.type | lower }}"
       component_gitops: "{{ organization_data.gitops }}"

@@ -22,7 +22,7 @@ spec:
       serviceaccountname: vault-auth
       contractName: General
       role: vault-role
-      authpath: besu{{ org.name | lower }}
+      authpath: besu{{ organization_data.name | lower }}
     images:
       alpineutils: {{ network.docker.url }}/alpine-utils:1.0
     expressapp:
