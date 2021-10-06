@@ -5,7 +5,9 @@ network:
   # Network level configuration specifies the attributes required for each organization
   # to join an existing network.
   type: besu
-  version: 1.4.4  #this is the version of Besu docker image that will be deployed.
+  version: 21.1.1  #this is the version of Besu docker image that will be deployed.
+
+  frontend: enabled
 
   #Environment section for Kubernetes setup
   env:
