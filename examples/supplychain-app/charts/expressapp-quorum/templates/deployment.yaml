@@ -45,7 +45,7 @@ spec:
       initContainers:
         - name: config-init
           image: {{ .Values.images.alpineutils }}
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           env:
           - name: VAULT_ADDR
             value: {{ .Values.vault.address }}
@@ -57,7 +57,7 @@ spec:
             value: {{ .Values.vault.role }}
           - name: MOUNT_PATH
             value: "/secret"
-          command: ["sh", "-c"]
+          command: ["/bin/bash", "-c"]
           args:
           - |-
             #!/bin/bash
@@ -98,6 +98,7 @@ spec:
 
             echo -n "${product_contract_address}" > ${OUTPUT_PATH}/product_contract_address
             echo -n "${node_identity}" > ${OUTPUT_PATH}/node_identity
+            tail -f /dev/null
           volumeMounts:
           - name: config
             mountPath: /secret
