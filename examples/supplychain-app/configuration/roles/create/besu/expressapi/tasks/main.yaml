@@ -24,9 +24,9 @@
     kubernetes: "{{ organization_data.k8s }}"
     label_selectors:
       - name = {{ component_name }}
-  loop: "{{ organization_data.services.peers }}"
-  loop_control:
-    loop_var: peer
+  # loop: "{{ organization_data.services.peers }}"
+  # loop_control:
+  #   loop_var: peer
   when: organization_data.type == 'member'
 
 # Create express-api value file for the peer nodes
