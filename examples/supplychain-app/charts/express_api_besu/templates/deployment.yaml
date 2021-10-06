@@ -60,8 +60,6 @@ spec:
           command: ["/bin/bash", "-c"]
           args:
           - |-
-            #!/bin/bash
-            
             validateVaultResponse () {
             if echo ${2} | grep "errors"; then
               echo "ERROR: unable to retrieve ${1}: ${2}"
@@ -77,7 +75,7 @@ spec:
               jq -r 'if .errors then . else .auth.client_token end')
             validateVaultResponse 'vault login token' "${VAULT_CLIENT_TOKEN}"
   
-            vault_secret_key="${VAULT_SECRET_PREFIX}/{{ .Values.vault.keyname }}"
+            vault_secret_key="${VAULT_SECRET_PREFIX}/{{ .Values.vault.contractName }}"
             echo "Getting the contract address from $vault_secret_key"          
             LOOKUP_SECRET_RESPONSE=$(curl -sS \
               --header "X-Vault-Token:${VAULT_CLIENT_TOKEN}" \
@@ -102,7 +100,7 @@ spec:
           - name: config
             mountPath: /secret
       containers:     
-        - name: expressapp
+        - name: express-app
           image: {{ .Values.expressapp.image }}
           imagePullPolicy: {{ .Values.expressapp.pullPolicy }}
           env:
@@ -110,18 +108,15 @@ spec:
             value: "{{ .Values.expressapp.env.geth_address }}"
           - name: NODE_SUBJECT
             value: "{{ .Values.expressapp.env.node_subject }}"
-          - name: NODE_ORGANIZATION
-            value: "{{ .Values.expressapp.env.node_organization }}"
-          - name: NODE_ORGANIZATION_UNIT
-            value: "{{ .Values.expressapp.env.node_organization_unit }}"
           - name: PROTOCOL
             value: "{{ .Values.expressapp.env.protocol }}"
           command: ["sh"]
           args:
-          - "-cx"
-          - "export PRODUCT_CONTRACT_ADDRESS=$(cat /secret/keys/product_contract_address);
+          - |-
+            "-cx"
+            export PRODUCT_CONTRACT_ADDRESS=$(cat /secret/keys/product_contract_address);
             export NODE_IDENTITY=$(cat /secret/keys/node_identity);
-            node app.js;"
+            node app.js;
           ports:
             - containerPort: {{ .Values.expressapp.nodePorts.targetPort }}
               name: expressapp
