@@ -18,16 +18,17 @@ const privateFor = [];
 const outputFolder = args['output'] == true ? args['output'] : './build';
 args['privateFor'].split(',').forEach(item => privateFor.push(item));
 const numberOfIterations = args['numberOfIteration'] | 100;
+// const tm_url = args['tm_url']  // url of tm node
 
 args['v'] && console.log(`Creating a web3 provider.......`);
 // const web3 = new EEAClient(new Web3(`${url}`), `${chainId}`);// Creating a provider
 const Web3 = require("web3");
 const Web3Quorum = require("web3js-quorum");
-const enclaveOptions = {
-  privateUrl: "http://peer1.bes.dev2.aws.blockchaincloudpoc-develop.com:15061"
-};
-const web3 = new Web3Quorum(new Web3(`${url}`),
-enclaveOptions);
+// const enclaveOptions = {
+//   privateUrl: tm_url
+// };
+// const web3 = new Web3Quorum(new Web3(`${url}`), enclaveOptions);
+const web3 = new Web3Quorum(new Web3(`${url}`));
 var transactionHash = ""; // to store transaction hash to get the transaction receipt 
 var contractAddress = "";
 
