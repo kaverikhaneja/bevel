@@ -1,66 +1,50 @@
 ############################################################################################
 #Check if the pods for the organizations are up and running
-# - name: "Waiting for peer pod {{ peer_data.name }} in {{ component_ns }}-bes"
-#   include_role:
-#     name: "../../../platforms/shared/configuration/roles/check/helm_component"
-#   vars:
-#     component_type: "Pod"
-#     namespace: "{{ component_ns }}"
-#     component_name: "{{ peer_data.name }}"
-#     kubernetes: "{{ organization_data.k8s }}"
-#     label_selectors:
-#       - name = {{ component_name }}
-#   loop: "{{ organization_data.services.peers }}"
-#   loop_control:
-#     loop_var: peer_data
-
-- name: "Waiting for peer pod {{ peer.name  }} in {{ component_ns }}"
+- name: "Waiting for peer pod {{ peer_data.name }} in {{ component_ns }}"
   include_role:
     name: "../../../platforms/shared/configuration/roles/check/helm_component"
   vars:
     component_type: "Pod"
     namespace: "{{ component_ns }}"
-    component_name: "{{ peer.name }}"
+    component_name: "{{ peer_data.name }}"
     kubernetes: "{{ organization_data.k8s }}"
     label_selectors:
       - name = {{ component_name }}
-  # loop: "{{ organization_data.services.peers }}"
-  # loop_control:
-  #   loop_var: peer
-  when: organization_data.type == 'member'
+  loop: "{{ organization_data.services.peers }}"
+  loop_control:
+    loop_var: peer_data
+
+# - name: "Waiting for peer pod {{ peer.name  }} in {{ component_ns }}"
+#   include_role:
+#     name: "../../../platforms/shared/configuration/roles/check/helm_component"
+#   vars:
+#     component_type: "Pod"
+#     namespace: "{{ component_ns }}"
+#     component_name: "{{ peer.name }}"
+#     kubernetes: "{{ organization_data.k8s }}"
+#     label_selectors:
+#       - name = {{ component_name }}
+#   # loop: "{{ organization_data.services.peers }}"
+#   # loop_control:
+#   #   loop_var: peer
+#   # when: organization_data.type == 'member'
 
 # Create express-api value file for the peer nodes
-# - name: "Create express-api values file for peer organizations"
-#   include_role:
-#     name: helm_component
-#   vars:
-#     type: "expressapi-quorum"
-#     name: "{{ peer_data.name }}"
-#     charts_dir: "{{ organization_data.gitops.chart_source }}"
-#     expressapi_image: "supplychain_quorum:express_app_latest"
-#     geth_address: "{{ peer_data.geth_url }}"
-#     peer_expressapi_port: "{{ peer_data.expressapi.port }}"
-#     peer_expressapi_targetport: "{{ peer_data.expressapi.targetPort }}"
-#   loop: "{{ organization_data.services.peers }}"
-#   loop_control:
-#     loop_var: peer_data
-#   when: peer_data.expressapi is defined
-
 - name: "Create express-api values file for peer organizations"
   include_role:
     name: helm_component
   vars:
     type: "expressapi-quorum"
-    name: "{{ peer.name }}"
+    name: "{{ peer_data.name }}"
     charts_dir: "{{ organization_data.gitops.chart_source }}"
     expressapi_image: "supplychain_quorum:express_app_latest"
-    geth_address: "{{ peer.geth_url }}"
-    peer_expressapi_port: "{{ peer.expressapi.port }}"
-    peer_expressapi_targetport: "{{ peer.expressapi.targetPort }}"
+    geth_address: "{{ peer_data.geth_url }}"
+    peer_expressapi_port: "{{ peer_data.expressapi.port }}"
+    peer_expressapi_targetport: "{{ peer_data.expressapi.targetPort }}"
   loop: "{{ organization_data.services.peers }}"
   loop_control:
-    loop_var: peer
-  when: peer.expressapi is defined
+    loop_var: peer_data
+  when: peer_data.expressapi is defined
 
 # Push the express-api deployment files to repository
 - name: "Push the created deployment files to repository"
