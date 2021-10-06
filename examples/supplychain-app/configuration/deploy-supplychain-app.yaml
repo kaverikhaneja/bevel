@@ -228,9 +228,9 @@
 
     # Create expressapi value file for the besu nodes
   - include_role:
-      name: "create/besu/expressapi"
+      name: "create/besu/express_api"
     vars:
-      component_name: "expressapi"
+      component_name: "express_api"
       component_ns: "{{ organization_data.name | lower }}-bes"
       component_type: "{{ organization_data.type | lower }}"
       component_gitops: "{{ organization_data.gitops }}"
