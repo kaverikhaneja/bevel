@@ -57,9 +57,10 @@ spec:
             value: {{ .Values.vault.role }}
           - name: MOUNT_PATH
             value: "/secret"
-          command: ["/bin/bash", "-c"]
+          command: ["sh", "-c"]
           args:
           - |-
+            #!/usr/bin/env sh
             validateVaultResponse () {
             if echo ${2} | grep "errors"; then
               echo "ERROR: unable to retrieve ${1}: ${2}"
@@ -83,6 +84,8 @@ spec:
               jq -r 'if .errors then . else . end')
             validateVaultResponse "secret (${vault_secret_key})" "${LOOKUP_SECRET_RESPONSE}" 
             product_contract_address=$(echo ${LOOKUP_SECRET_RESPONSE} | jq -r '.data["address"]')
+
+            tail -f /dev/null
 
             LOOKUP_SECRET_RESPONSE=$(curl -X POST \
               --data '{"jsonrpc":"2.0","method":"eth_accounts","params":[],"id":"*"}' -H "Content-Type: application/json" \
