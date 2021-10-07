@@ -27,7 +27,7 @@ spec:
       alpineutils: index.docker.io/hyperledgerlabs/alpine-utils:1.0
     expressapp:
       serviceType: ClusterIP
-      image: index.docker.io/hyperledgerlabs/hyperledgerlabs/supplychain_quorum
+      image: index.docker.io/hyperledgerlabs/supplychain_quorum
       pullPolicy: Always
       pullSecrets: regcred
       nodePorts:
