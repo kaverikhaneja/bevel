@@ -135,11 +135,9 @@ spec:
           args:
           - |-
             
-            tail -f /dev/null
             export PRODUCT_CONTRACT_ADDRESS=$(cat /secret/keys/product_contract_address);
             export NODE_IDENTITY=$(cat /secret/keys/node_identity);
-            node -v
-            nodejs -v
+          
             node app.js;
           ports:
             - containerPort: {{ .Values.expressapp.nodePorts.targetPort }}
