@@ -46,6 +46,9 @@ spec:
         - name: config-init
           image: {{ .Values.images.alpineutils }}
           imagePullPolicy: IfNotPresent
+          volumeMounts:
+          - name: config
+            mountPath: /secret
           env:
           - name: VAULT_ADDR
             value: {{ .Values.vault.address }}
@@ -85,8 +88,6 @@ spec:
             validateVaultResponse "secret (${vault_secret_key})" "${LOOKUP_SECRET_RESPONSE}" 
             product_contract_address=$(echo ${LOOKUP_SECRET_RESPONSE} | jq -r '.data["address"]')
 
-            tail -f /dev/null
-
             LOOKUP_SECRET_RESPONSE=$(curl -X POST \
               --data '{"jsonrpc":"2.0","method":"eth_accounts","params":[],"id":"*"}' -H "Content-Type: application/json" \
               {{ .Values.expressapp.env.geth_address }} | \
@@ -99,9 +100,6 @@ spec:
 
             echo -n "${product_contract_address}" > ${OUTPUT_PATH}/product_contract_address
             echo -n "${node_identity}" > ${OUTPUT_PATH}/node_identity
-          volumeMounts:
-          - name: config
-            mountPath: /secret
       containers:     
         - name: express-app
           image: {{ .Values.expressapp.image }}
