@@ -45,7 +45,7 @@ spec:
       initContainers:
         - name: config-init
           image: {{ .Values.images.alpineutils }}
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           volumeMounts:
           - name: config
             mountPath: /secret
