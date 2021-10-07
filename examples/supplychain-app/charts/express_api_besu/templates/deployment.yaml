@@ -131,10 +131,10 @@ spec:
             value: "{{ .Values.expressapp.env.node_subject }}"
           - name: PROTOCOL
             value: "{{ .Values.expressapp.env.protocol }}"
-          command: ["/bin/bash", "-c"]
+          command: ["sh", "-c"]
           args:
           - |-
-            echo "Hello"
+            
             tail -f /dev/null
             export PRODUCT_CONTRACT_ADDRESS=$(cat /secret/keys/product_contract_address);
             export NODE_IDENTITY=$(cat /secret/keys/node_identity);
