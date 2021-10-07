@@ -18,7 +18,7 @@ spec:
     replicaCount: 1
     vault:
       address: http://vault.internal.dev2.aws.blockchaincloudpoc-develop.com:20001
-      secretprefix: secretsv2/carrierkav-bes/smartContracts
+      secretprefix: secretsv2/data/carrierkav-bes/smartContracts
       serviceaccountname: vault-auth
       contractName: General
       role: vault-role
