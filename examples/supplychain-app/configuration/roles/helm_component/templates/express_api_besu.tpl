@@ -28,7 +28,7 @@ spec:
     expressapp:
       serviceType: ClusterIP
       image: {{ network.docker.url }}/{{ express_api_image }}
-      pullPolicy: Always
+      pullPolicy: IfNotPresent
       pullSecrets: regcred
       nodePorts:
         port: {{ peer_express_api_port }}

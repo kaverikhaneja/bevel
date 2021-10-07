@@ -111,7 +111,6 @@ spec:
                 --data '{"jsonrpc":"2.0","method":"eth_accounts","params":[],"id":"*"}' -H "Content-Type: application/json" \
                 {{ .Values.expressapp.env.geth_address }} | \
                 jq -r 'if .errors then . else . end')
-              validateVaultResponse "secret (${vault_secret_key})" "${LOOKUP_SECRET_RESPONSE}" "LOOKUPSECRETRESPONSE"
               node_identity=$(echo ${LOOKUP_SECRET_RESPONSE} | jq -r '.result[0]')
 
               echo "Node identity: ${node_identity}"

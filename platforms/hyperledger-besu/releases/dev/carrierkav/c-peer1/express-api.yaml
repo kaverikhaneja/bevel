@@ -28,7 +28,7 @@ spec:
     expressapp:
       serviceType: ClusterIP
       image: index.docker.io/hyperledgerlabs/supplychain_quorum:express_app_latest
-      pullPolicy: Always
+      pullPolicy: IfNotPresent
       pullSecrets: regcred
       nodePorts:
         port: 3000
