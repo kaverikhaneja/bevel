@@ -42,7 +42,7 @@ expressapp:
     #This defines the service type of the node
     serviceType: ClusterIP
     # The image that will be pulled from docker url
-    image: index.docker.io/hyperledgerlabs/supplychain_quorum:express_app_latest
+    image: index.docker.io/hyperledgerlabs/supplychain_quorum
     # The pull policy
     pullPolicy: IfNotPresent
     # The node ports to be used

@@ -22,7 +22,7 @@
     type: "expressapi-quorum"
     name: "{{ peer_data.name }}"
     charts_dir: "{{ organization_data.gitops.chart_source }}"
-    expressapi_image: "supplychain_quorum:express_app_latest"
+    expressapi_image: "supplychain_quorum"
     geth_address: "{{ peer_data.geth_url }}"
     peer_expressapi_port: "{{ peer_data.expressapi.port }}"
     peer_expressapi_targetport: "{{ peer_data.expressapi.targetPort }}"
