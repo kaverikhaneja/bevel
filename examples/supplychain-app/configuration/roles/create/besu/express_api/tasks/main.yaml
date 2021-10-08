@@ -104,4 +104,4 @@
   replace:
     path: "{{ playbook_dir }}/../../../tests/SupplychainDemo_besu.postman_environment.json"
     regexp: "{{ organization_data.name | lower }}_account"
-    replace: "{{ account[0] }}"
+    replace: "{{ account_id.results[0] }}"
