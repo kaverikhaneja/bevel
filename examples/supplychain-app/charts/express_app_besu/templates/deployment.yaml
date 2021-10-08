@@ -114,17 +114,12 @@ spec:
               #   {{ .Values.expressapp.env.geth_address }} | \
               #   jq -r 'if .errors then . else . end')
               # node_identity=$(echo ${LOOKUP_SECRET_RESPONSE} | jq -r '.result[0]')
-
-              # Get the node account address
-              node_identity= (geth attach ${GETH_ADDRESS})
-              
-              echo "Node identity: ${node_identity}"
   
               OUTPUT_PATH="${MOUNT_PATH}/keys"
               mkdir -p ${OUTPUT_PATH}
 
               echo -n "${product_contract_address}" > ${OUTPUT_PATH}/product_contract_address
-              echo -n "${node_identity}" > ${OUTPUT_PATH}/node_identity
+              # echo -n "${node_identity}" > ${OUTPUT_PATH}/node_identity
       containers:     
         - name: express-app
           image: {{ .Values.expressapp.image }}
@@ -141,7 +136,7 @@ spec:
           - |-
             
             export PRODUCT_CONTRACT_ADDRESS=$(cat /secret/keys/product_contract_address);
-            export NODE_IDENTITY=$(cat /secret/keys/node_identity);
+            # export NODE_IDENTITY=$(cat /secret/keys/node_identity);
             node app.js;
           ports:
             - containerPort: {{ .Values.expressapp.nodePorts.targetPort }}
