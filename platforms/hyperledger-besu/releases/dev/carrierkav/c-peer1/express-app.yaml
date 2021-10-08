@@ -1,0 +1,45 @@
+apiVersion: helm.fluxcd.io/v1
+kind: HelmRelease
+metadata:
+  name: c-peer1-express-api
+  namespace: carrierkav-bes
+  annotations:
+    fluxcd.io/automated: "false"
+spec:
+  chart:
+    path: examples/supplychain-app/charts/express_app_besu
+    git: "https://github.com/kaverikhaneja/blockchain-automation-framework.git"
+    ref: "besu-privateTx"
+  releaseName: c-peer1besu-express-api
+  values:
+    nodeName: c-peer1-express-api
+    metadata:
+      namespace: carrierkav-bes
+    replicaCount: 1
+    vault:
+      address: http://vault.internal.dev2.aws.blockchaincloudpoc-develop.com:20001
+      secretprefix: secretsv2/data/carrierkav-bes/smartContracts
+      serviceaccountname: vault-auth
+      contractName: General
+      role: vault-role
+      authpath: besucarrierkav
+    images:
+      alpineutils: index.docker.io/hyperledgerlabs/alpine-utils:1.0
+    expressapp:
+      serviceType: ClusterIP
+      image: index.docker.io/hyperledgerlabs/supplychain_quorum:express_app_latest
+      pullPolicy: IfNotPresent
+      pullSecrets: regcred
+      nodePorts:
+        port: 3000
+        targetPort: 3000
+        name: tcp
+      env:
+        geth_address: http://c-peer1.bes.dev2.aws.blockchaincloudpoc-develop.com:15050
+        node_subject: O=Carrier,OU=Carrier,L=51.50/-0.13/London,C=GB
+        protocol: ibft
+    proxy:
+      provider: ambassador
+      name: carrierkav
+      external_url_suffix: bes.dev2.aws.blockchaincloudpoc-develop.com
+      peer_name: c-peer1

@@ -58,6 +58,8 @@ spec:
             value: {{ .Values.vault.authpath }}
           - name: VAULT_APP_ROLE
             value: {{ .Values.vault.role }}
+          - name: GETH_ADDRESS
+            value: {{ .Values.expressapp.env.geth_address }}
           - name: MOUNT_PATH
             value: "/secret"
           command: ["sh", "-c"]
@@ -107,12 +109,15 @@ spec:
 
               echo "Contract address: ${product_contract_address}"
 
-              LOOKUP_SECRET_RESPONSE=$(curl -X POST \
-                --data '{"jsonrpc":"2.0","method":"eth_accounts","params":[],"id":"*"}' -H "Content-Type: application/json" \
-                {{ .Values.expressapp.env.geth_address }} | \
-                jq -r 'if .errors then . else . end')
-              node_identity=$(echo ${LOOKUP_SECRET_RESPONSE} | jq -r '.result[0]')
+              # LOOKUP_SECRET_RESPONSE=$(curl -X POST \
+              #   --data '{"jsonrpc":"2.0","method":"eth_accounts","params":[],"id":"*"}' -H "Content-Type: application/json" \
+              #   {{ .Values.expressapp.env.geth_address }} | \
+              #   jq -r 'if .errors then . else . end')
+              # node_identity=$(echo ${LOOKUP_SECRET_RESPONSE} | jq -r '.result[0]')
 
+              # Get the node account address
+              node_identity= (geth attach ${GETH_ADDRESS})
+              
               echo "Node identity: ${node_identity}"
   
               OUTPUT_PATH="${MOUNT_PATH}/keys"
