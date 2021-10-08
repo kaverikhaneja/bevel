@@ -102,6 +102,7 @@
 # Replace accountid in postman env file
 - name: Replace accountid in postman env file
   replace:
-    path: "{{ playbook_dir }}/../../../tests/SupplychainDemo_besu.postman_environment.json"
+    # path: "{{ playbook_dir }}/../../../tests/SupplychainDemo_besu.postman_environment.json"
+    path: "/home/kaveri/blockchain-automation-framework/examples/supplychain-app/tests/SupplychainDemo_besu.postman_environment.json"
     regexp: "{{ organization_data.name | lower }}_account"
     replace: "{{ account_id.results[0] }}"
