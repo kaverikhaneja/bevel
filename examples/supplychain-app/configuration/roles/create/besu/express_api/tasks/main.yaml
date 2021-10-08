@@ -82,7 +82,7 @@
 # Get the eth account address
 - name: Get eth account address
   shell: |
-    geth attach {{ peer_data.geth_url }}
+    geth attach {{ peer.geth_url }}
   loop: "{{ organization_data.services.peers }}"
   loop_control:
     loop_var: peer
