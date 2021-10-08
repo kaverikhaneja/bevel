@@ -97,7 +97,7 @@
 - name: Get eth accounts
   set_fact:
     # account: "{{ account_id.results[0].content | from_json | json_query('result') }}"
-    account: "{{ account_id.results[0].content }}"
+    account: "{{ account_id.results[0] }}"
 
 # Replace accountid in postman env file
 - name: Replace accountid in postman env file
