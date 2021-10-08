@@ -6,4 +6,4 @@ charts:
   webserver-ent: springbootwebserver
   frontend: frontend
   expressapi-quorum: expressapp-quorum
-  express_api_besu: express_api_besu
+  express_app_besu: express_app_besu

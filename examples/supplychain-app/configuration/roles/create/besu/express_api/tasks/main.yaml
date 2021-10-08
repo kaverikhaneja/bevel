@@ -19,11 +19,11 @@
   include_role:
     name: helm_component
   vars:
-    type: "express_api_besu"
-    component_name: express-api
+    type: "express_app_besu"
+    component_name: express-app
     name: "{{ peer_data.name }}"
     charts_dir: "{{ organization_data.gitops.chart_source }}"
-    express_api_image: "supplychain_quorum:express_app_latest"
+    express_app_image: "supplychain_quorum:express_app_latest"
     geth_address: "{{ peer_data.geth_url }}"
     peer_express_api_port: "{{ peer_data.expressapi.port }}"
     peer_express_api_targetport: "{{ peer_data.expressapi.targetPort }}"

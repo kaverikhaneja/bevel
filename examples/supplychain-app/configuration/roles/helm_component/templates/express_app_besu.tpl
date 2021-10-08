@@ -7,7 +7,7 @@ metadata:
     fluxcd.io/automated: "false"
 spec:
   chart:
-    path: {{ component_gitops.chart_source }}/express_api_besu
+    path: {{ component_gitops.chart_source }}/express_app_besu
     git: "{{ component_gitops.git_url }}"
     ref: "{{ component_gitops.branch }}"
   releaseName: {{ name }}{{ network.type }}-express-api
@@ -27,7 +27,7 @@ spec:
       alpineutils: {{ network.docker.url }}/alpine-utils:1.0
     expressapp:
       serviceType: ClusterIP
-      image: {{ network.docker.url }}/{{ express_api_image }}
+      image: {{ network.docker.url }}/{{ express_app_image }}
       pullPolicy: IfNotPresent
       pullSecrets: regcred
       nodePorts:
