@@ -69,9 +69,9 @@ const deploy = async () => {
 }
 
 const deploySmartContract = async (contractOptions) => {
-  // args['v'] && console.log(`trying to create a new account from private key`);
-  // const newAccount = await web3.eth.accounts.privateKeyToAccount(`0x${privateKey}`) // Creating new ethereum account from the private key
-  // args['v'] && console.log(newAccount);
+  args['v'] && console.log(`trying to create a new account from private key`);
+  const newAccount = await web3.eth.accounts.privateKeyToAccount(`0x${privateKey}`) // Creating new ethereum account from the private key
+  args['v'] && console.log(newAccount);
   args['v'] && console.log(`Deploying the smartcontract......`);
   // return web3.eea.sendRawTransaction(contractOptions);
   return web3.priv.generateAndSendRawTransaction(contractOptions); // deploy smartcontract with contractoptions
