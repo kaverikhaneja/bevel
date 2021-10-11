@@ -58,43 +58,43 @@
     loop_var: peer
   when: peer.expressapi is defined
 
-## Update the postman json file with account ids
-# This task gets the account address
-# - name: Get geth account 
-#   uri:
-#     url: "{{ peer.geth_url }}"
-#     method: POST
-#     validate_certs: no
-#     return_content: yes
-#     body_format: json
-#     body: '{"jsonrpc":"2.0","method":"eth_accounts","params":[],"id":1}'
-#     headers:
-#       Content-Type: "application/json"
-#   loop: "{{ organization_data.services.peers }}"
-#   loop_control:
-#     loop_var: peer
-#   register: account_id
-#   until: account_id.status == 200
-#   retries: "{{ network.env.retry_count }}"
-#   delay: 50
-#   when: peer.geth_url is defined
-
-# Get the eth account address
-- name: Get eth account address
-  shell: |
-    geth attach {{ peer.geth_url }}
+# Update the postman json file with account ids
+This task gets the account address
+- name: Get geth account 
+  uri:
+    url: "{{ peer.geth_url }}"
+    method: POST
+    validate_certs: no
+    return_content: yes
+    body_format: json
+    body: '{"jsonrpc":"2.0","method":"eth_accounts","params":[],"id":1}'
+    headers:
+      Content-Type: "application/json"
   loop: "{{ organization_data.services.peers }}"
   loop_control:
     loop_var: peer
   register: account_id
-  # until: account_id.status == 200
+  until: account_id.status == 200
   retries: "{{ network.env.retry_count }}"
   delay: 50
   when: peer.geth_url is defined
 
-- name:  Checking accounts id
-  debug: 
-    msg: "{{ account_id }}"
+# # Get the eth account address
+# - name: Get eth account address
+#   shell: |
+#     geth attach {{ peer.geth_url }}
+#   loop: "{{ organization_data.services.peers }}"
+#   loop_control:
+#     loop_var: peer
+#   register: account_id
+#   # until: account_id.status == 200
+#   retries: "{{ network.env.retry_count }}"
+#   delay: 50
+#   when: peer.geth_url is defined
+
+# - name:  Checking accounts id
+#   debug: 
+#     msg: "{{ account_id }}"
     
 
 # This task fetches the eth acoount 
