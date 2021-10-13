@@ -79,29 +79,11 @@ This task gets the account address
   delay: 50
   when: peer.geth_url is defined
 
-# # Get the eth account address
-# - name: Get eth account address
-#   shell: |
-#     geth attach {{ peer.geth_url }}
-#   loop: "{{ organization_data.services.peers }}"
-#   loop_control:
-#     loop_var: peer
-#   register: account_id
-#   # until: account_id.status == 200
-#   retries: "{{ network.env.retry_count }}"
-#   delay: 50
-#   when: peer.geth_url is defined
-
-# - name:  Checking accounts id
-#   debug: 
-#     msg: "{{ account_id }}"
-    
-
 # This task fetches the eth acoount 
 - name: Get eth accounts
   set_fact:
-    # account: "{{ account_id.results[0].content | from_json | json_query('result') }}"
-    account: "{{ account_id.results[0] }}"
+    account: "{{ account_id.results[0].content | from_json | json_query('result') }}"
+    
 
 # Replace accountid in postman env file
 - name: Replace accountid in postman env file

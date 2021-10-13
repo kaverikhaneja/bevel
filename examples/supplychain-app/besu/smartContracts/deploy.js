@@ -11,7 +11,7 @@ const url = args['url'];  // url of RPC port of besu node
 const contractPath = args['path']; // path to the contract directory
 const contractEntryPoint = args['entryPoint']; // Smart contract entrypoint eg Main.sol
 const contractName = args['contractName']; // Smart Contract Class Nameconst initArguments = process.env.INITARGUMENTS | " ";
-// const chainId = args['chainId'];
+const chainId = args['chainId'];
 const orionPublicKey = args['orionKey'];
 const privateKey = args['privateKey'];
 const privateFor = [];
@@ -41,7 +41,8 @@ const deploy = async () => {
     data: `0x${smartContract.bytecode}`, // contract binary
     privateFrom: `${orionPublicKey}`,
     privateFor: privateFor,
-    privateKey: `${privateKey}`
+    privateKey: `${privateKey}`,
+    chainId: chainId
   };
   
   args['v'] && console.log(`Created the contract options`);
@@ -70,17 +71,14 @@ const deploy = async () => {
 
 const deploySmartContract = async (contractOptions) => {
   args['v'] && console.log(`trying to create a new account from private key`);
-  const newWallet = await web3.eth.accounts.wallet.create();    // create an empty wallet
   const newAccount = await web3.eth.accounts.privateKeyToAccount(`0x${privateKey}`) // Creating new ethereum account from the private key
   args['v'] && console.log(newAccount);
-  web3.eth.accounts.wallet.add(newAccount);      // adding the newAccount to newWallet
-  // web3.eth.accounts.wallet;
-  args['v'] && console.log(newWallet);
-  const accountID = await web3.eth.getAccounts()  // returns a list of accounts the node controls
-  args['v'] && console.log(accountID);
+  // sign the transaction
+  web3.eth.accounts.signTransaction(contractOptions, privateKey).then(console.log);
   args['v'] && console.log(`Deploying the smartcontract......`);
+  return web3.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'));
   // // return web3.eea.sendRawTransaction(contractOptions);
-  return web3.priv.generateAndSendRawTransaction(contractOptions); // deploy smartcontract with contractoptions
+  // return web3.priv.generateAndSendRawTransaction(contractOptions); // deploy smartcontract with contractoptions
 }
 
 
