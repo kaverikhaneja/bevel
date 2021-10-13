@@ -23,12 +23,11 @@ const numberOfIterations = args['numberOfIteration'] | 100;
 args['v'] && console.log(`Creating a web3 provider.......`);
 // const web3 = new EEAClient(new Web3(`${url}`), `${chainId}`);// Creating a provider
 const Web3 = require("web3");
-const Web3Quorum = require("web3js-quorum");
-// const enclaveOptions = {
-//   privateUrl: tm_url
-// };
-// const web3 = new Web3Quorum(new Web3(`${url}`), enclaveOptions);
-const web3 = new Web3Quorum(new Web3(`${url}`));
+// const Web3Quorum = require("web3js-quorum");
+// const web3 = new Web3Quorum(new Web3(`${url}`));
+const web3 = new Web3(new Web3.providers.HttpProvider(`${url}`))
+var V3KeyStore = web3.eth.accounts.encrypt(`${privateKey}`, "Password");
+console.log(JSON.stringify(V3KeyStore));
 var transactionHash = ""; // to store transaction hash to get the transaction receipt 
 var contractAddress = "";
 

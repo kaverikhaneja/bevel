@@ -1,0 +1,7 @@
+[metadata]
+description = "File based configuration"
+
+[signing]
+type = "file-based-signer"
+key-file = "blockchain-automation-framework/examples/supplychain-app/besu/smartContracts/keyFile"
+password-file = "blockchain-automation-framework/examples/supplychain-app/besu/smartContracts/passwordFile"

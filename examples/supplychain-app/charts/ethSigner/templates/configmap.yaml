@@ -1,0 +1,34 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: accountprivatekey
+  namespace: manufacturerkav-bes
+  labels:
+    app.kubernetes.io/name: accountprivatekey
+    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    # app.kubernetes.io/managed-by: {{ .Release.Service }}
+    # app.kubernetes.io/instance: {{ .Release.Name }}
+    # {{- include "labels.custom" . | nindent 2 }}
+data:
+ keyfile: 
+  {
+   "version":3,
+   "id":"4d8e08d8-bd7b-4791-b583-2e9534b7c03e",
+   "address":"4e80b07d24627ef85cc5cd50689fc6ace259ae99",
+   "crypto":{
+     "ciphertext":"3c6aaf59b7dfd4436aea04360ee3d333e1783da557f1ef7e90afc9321e0d5eab",
+     "cipherparams":{"iv":"4ec21c06d4f3d42bcd3c0f2d81d1b60f"},
+     "cipher":"aes-128-ctr",
+     "kdf":"scrypt",
+     "kdfparams":{
+       "dklen":32,
+       "salt":"8dcc07323b570a5fe5347a73c5737108e4cde9f8c4f3f360578095275a52b7f6",
+       "n":8192,
+       "r":8,
+       "p":1
+     },
+     "mac":"d7c595241128f671efd6562349490636ce6d0a75327b867407ec4a07fd807c2d"
+    }
+ }
+
