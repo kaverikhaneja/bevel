@@ -21,13 +21,11 @@ const numberOfIterations = args['numberOfIteration'] | 100;
 // const tm_url = args['tm_url']  // url of tm node
 
 args['v'] && console.log(`Creating a web3 provider.......`);
-// const web3 = new EEAClient(new Web3(`${url}`), `${chainId}`);// Creating a provider
 const Web3 = require("web3");
+const EEAClient = require("web3-eea"); // Web3.js wrapper
+const web3 = new EEAClient(new Web3(`${url}`), `${chainId}`);// Creating a provider
 // const Web3Quorum = require("web3js-quorum");
 // const web3 = new Web3Quorum(new Web3(`${url}`));
-const web3 = new Web3(new Web3.providers.HttpProvider(`${url}`))
-var V3KeyStore = web3.eth.accounts.encrypt(`${privateKey}`, "Password");
-console.log(JSON.stringify(V3KeyStore));
 var transactionHash = ""; // to store transaction hash to get the transaction receipt 
 var contractAddress = "";
 
@@ -37,13 +35,14 @@ const deploy = async () => {
   const smartContract = await contract.GetByteCode(numberOfIterations, contractPath, contractEntryPoint, contractName); // Converting smart contract to byte code, optimizing the bytecode conversion for numer of Iterations
   args['v'] && console.log(`Smartcontract converted into bytecode and abi`);
   const contractOptions = {
+    from:  newAccount,                   // Address of the sender. Must be the address of the keystore account.
     data: `0x${smartContract.bytecode}`, // contract binary
-    privateFrom: `${orionPublicKey}`,
-    privateFor: privateFor,
+    privateFrom: `${orionPublicKey}`,    // tm address of the sender
+    privateFor: privateFor,              // tm addresses of recipients
     privateKey: `${privateKey}`,
+    restriction: "restricted",
     chainId: chainId
   };
-  
   args['v'] && console.log(`Created the contract options`);
   await deploySmartContract(contractOptions)
     .then(hash => {
@@ -72,10 +71,8 @@ const deploySmartContract = async (contractOptions) => {
   args['v'] && console.log(`trying to create a new account from private key`);
   const newAccount = await web3.eth.accounts.privateKeyToAccount(`0x${privateKey}`) // Creating new ethereum account from the private key
   args['v'] && console.log(newAccount);
-  // sign the transaction
-  web3.eth.accounts.signTransaction(contractOptions, privateKey).then(console.log);
   args['v'] && console.log(`Deploying the smartcontract......`);
-  return web3.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'));
+  return web3.eea_sendTransaction(contractOptions)
   // // return web3.eea.sendRawTransaction(contractOptions);
   // return web3.priv.generateAndSendRawTransaction(contractOptions); // deploy smartcontract with contractoptions
 }

@@ -1,5 +1,5 @@
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: batch/v1
+kind: Job
 metadata:
   name: ethsigner
   namespace: manufacturerkav-bes
@@ -10,16 +10,16 @@ metadata:
     # app.kubernetes.io/instance: {{ .Release.Name }}
     app: ethsigner
 spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: ethsigner
-      app.kubernetes.io/name: ethsigner
-      # helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
-      # app.kubernetes.io/instance: {{ .Release.Name }}
-  strategy:
-    type: Recreate
-    rollingUpdate: null
+  # selector:
+  #   matchLabels:
+  #     app: ethsigner
+  #     app.kubernetes.io/name: ethsigner
+  #     # helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+  #     # app.kubernetes.io/instance: {{ .Release.Name }}
+  # strategy:
+  #   type: Recreate
+  #   rollingUpdate: null
+  backoffLimit: 6
   template:
     metadata:
       labels:
@@ -28,8 +28,8 @@ spec:
         #helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
         #app.kubernetes.io/instance: {{ .Release.Name }}
     spec:
+      restartPolicy: OnFailure
       serviceAccountName: vault-auth
-      hostname: ethsigners
       volumes:
       - name: privatekey
         configMap:
@@ -40,7 +40,7 @@ spec:
       - name: passwordfile
         emptyDir: 
           medium: Memory
-      containers:
+      initContainers:
       - name: account-secret
         image: index.docker.io/hyperledgerlabs/alpine-utils:1.0
         imagePullPolicy: IfNotPresent
@@ -109,7 +109,7 @@ spec:
           validateVaultResponse "password (${vault_secret_key})" "${LOOKUP_SECRET_RESPONSE}" "LOOKUPSECRETRESPONSE" 
           password=$(echo ${LOOKUP_SECRET_RESPONSE} | jq -r '.data.data["password"]') 
           echo "${password}" > ${MOUNT_PATH}/password
-      # containers:     
+      containers:     
       - name: ethsigner
         image: pegasyseng/ethsigner:21.3
         imagePullPolicy: Always
@@ -124,7 +124,9 @@ spec:
         command: ["sh", "-c"]
         args:
         - |-
-          /opt/ethsigner/bin/ethsigner --chain-id=2018 --downstream-http-port=8590 file-based-signer --key-file=/keyfile/key --password-file=${MOUNT_PATH}/password
+          apt-get update && apt-get install curl -y;
+          curl --version
+          /opt/ethsigner/bin/ethsigner --chain-id=2018 --downstream-http-port=8545 --http-listen-port=8090 --downstream-http-host=m-peer1.manufacturerkav-bes file-based-signer --key-file=/keyfile/key --password-file=${MOUNT_PATH}/password
           echo "ethsigner started"
         
-          
+     
