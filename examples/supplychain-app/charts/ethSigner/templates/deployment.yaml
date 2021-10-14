@@ -29,14 +29,14 @@ spec:
         #app.kubernetes.io/instance: {{ .Release.Name }}
     spec:
       serviceAccountName: vault-auth
-      hostname: ethsigner
+      hostname: ethsigners
       volumes:
-      - name: accountprivatekey
+      - name: privatekey
         configMap:
           name: accountprivatekey
           items:
-            - key: keyfile
-              path: keyfile
+          - key: key
+            path: key
       - name: passwordfile
         emptyDir: 
           medium: Memory
@@ -47,7 +47,7 @@ spec:
         volumeMounts:
         - name: passwordfile
           mountPath: /password
-        - name: accountprivatekey
+        - name: privatekey
           mountPath: /keyfile
         env:
         - name: MOUNT_PATH
@@ -108,13 +108,13 @@ spec:
             jq -r 'if .errors then . else . end')
           validateVaultResponse "password (${vault_secret_key})" "${LOOKUP_SECRET_RESPONSE}" "LOOKUPSECRETRESPONSE" 
           password=$(echo ${LOOKUP_SECRET_RESPONSE} | jq -r '.data.data["password"]') 
-          echo "${password}" > ${MOUNT_PATH}
+          echo "${password}" > ${MOUNT_PATH}/password
       # containers:     
       - name: ethsigner
-        image: consensys/ethsigner:21.3
-        imagePullPolicy: IfNotPresent
+        image: pegasyseng/ethsigner:21.3
+        imagePullPolicy: Always
         volumeMounts:
-        - name: accountprivatekey
+        - name: privatekey
           mountPath: /keyfile
         - name: passwordfile
           mountPath: /password 
@@ -124,7 +124,7 @@ spec:
         command: ["sh", "-c"]
         args:
         - |-
-          ethsigner --chain-id=2018 --downstream-http-port=8590 file-based-signer --key-file=/keyfile --password-file=${MOUNT_PATH}
+          /opt/ethsigner/bin/ethsigner --chain-id=2018 --downstream-http-port=8590 file-based-signer --key-file=/keyfile/key --password-file=${MOUNT_PATH}/password
           echo "ethsigner started"
         
           
