@@ -96,7 +96,7 @@ spec:
             -d '{"role":"'"${VAULT_APP_ROLE}"'","jwt":"'"${KUBE_SA_TOKEN}"'"}' | \
             jq -r 'if .errors then . else .auth.client_token end')
           validateVaultResponse 'vault login token' "${VAULT_CLIENT_TOKEN}"
-          echo "logged in"
+          echo "logged into the vault"
 
           mkdir -p ${MOUNT_PATH}
 
