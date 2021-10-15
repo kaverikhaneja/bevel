@@ -22,10 +22,10 @@ const numberOfIterations = args['numberOfIteration'] | 100;
 
 args['v'] && console.log(`Creating a web3 provider.......`);
 const Web3 = require("web3");
-const EEAClient = require("web3-eea"); // Web3.js wrapper
-const web3 = new EEAClient(new Web3(`${url}`), `${chainId}`);// Creating a provider
-// const Web3Quorum = require("web3js-quorum");
-// const web3 = new Web3Quorum(new Web3(`${url}`));
+// const EEAClient = require("web3-eea"); // Web3.js wrapper
+// const web3 = new EEAClient(new Web3(`${url}`), `${chainId}`);// Creating a provider
+const Web3Quorum = require("web3js-quorum");
+const web3 = new Web3Quorum(new Web3(`${url}`));
 var transactionHash = ""; // to store transaction hash to get the transaction receipt 
 var contractAddress = "";
 
@@ -35,13 +35,10 @@ const deploy = async () => {
   const smartContract = await contract.GetByteCode(numberOfIterations, contractPath, contractEntryPoint, contractName); // Converting smart contract to byte code, optimizing the bytecode conversion for numer of Iterations
   args['v'] && console.log(`Smartcontract converted into bytecode and abi`);
   const contractOptions = {
-    from:  newAccount,                   // Address of the sender. Must be the address of the keystore account.
     data: `0x${smartContract.bytecode}`, // contract binary
     privateFrom: `${orionPublicKey}`,    // tm address of the sender
     privateFor: privateFor,              // tm addresses of recipients
     privateKey: `${privateKey}`,
-    restriction: "restricted",
-    chainId: chainId
   };
   args['v'] && console.log(`Created the contract options`);
   await deploySmartContract(contractOptions)
@@ -72,9 +69,9 @@ const deploySmartContract = async (contractOptions) => {
   const newAccount = await web3.eth.accounts.privateKeyToAccount(`0x${privateKey}`) // Creating new ethereum account from the private key
   args['v'] && console.log(newAccount);
   args['v'] && console.log(`Deploying the smartcontract......`);
-  return web3.eea_sendTransaction(contractOptions)
+  // return web3.eea_sendTransaction(contractOptions)
   // // return web3.eea.sendRawTransaction(contractOptions);
-  // return web3.priv.generateAndSendRawTransaction(contractOptions); // deploy smartcontract with contractoptions
+  return web3.priv.generateAndSendRawTransaction(contractOptions); // deploy smartcontract with contractoptions
 }
 
 

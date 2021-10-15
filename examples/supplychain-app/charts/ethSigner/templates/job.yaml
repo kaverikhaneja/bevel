@@ -112,7 +112,7 @@ spec:
       containers:     
       - name: ethsigner
         image: pegasyseng/ethsigner:21.3
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         volumeMounts:
         - name: privatekey
           mountPath: /keyfile
@@ -126,6 +126,4 @@ spec:
         - |-
           apt-get update && apt-get install curl -y;
           /opt/ethsigner/bin/ethsigner --chain-id=2018 --downstream-http-port=8545 --http-listen-port=8090 --downstream-http-host=m-peer1.manufacturerkav-bes file-based-signer --key-file=/keyfile/key --password-file=${MOUNT_PATH}/password
-          echo "ethsigner started"
-        
-     
+          
