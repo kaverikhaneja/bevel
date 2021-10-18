@@ -43,7 +43,7 @@ spec:
       initContainers:
       - name: account-secret
         image: index.docker.io/hyperledgerlabs/alpine-utils:1.0
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         volumeMounts:
         - name: passwordfile
           mountPath: /password
@@ -112,7 +112,7 @@ spec:
       containers:     
       - name: ethsigner
         image: pegasyseng/ethsigner:21.3
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         volumeMounts:
         - name: privatekey
           mountPath: /keyfile
