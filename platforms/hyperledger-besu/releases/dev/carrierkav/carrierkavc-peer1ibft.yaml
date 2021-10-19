@@ -1,0 +1,76 @@
+apiVersion: helm.fluxcd.io/v1
+kind: HelmRelease
+metadata:
+  name: carrierkavc-peer1ibft
+  namespace: carrierkav-bes
+  annotations:
+    flux.weave.works/automated: "false"
+spec:
+  releaseName: carrierkavc-peer1ibft
+  chart:
+    git: https://github.com/kaverikhaneja/blockchain-automation-framework.git
+    ref: besu-Tx
+    path: platforms/hyperledger-besu/charts/node_besu
+  values:
+    metadata:
+      namespace: carrierkav-bes
+      labels:
+    replicaCount: 1
+    staticnodes:
+      - "enode://34441f62557fdf15c0527bc4e311ab446078bdd3de50060330633443263819875c7be85782e36e48c0144865c32f009cc993e8d88199b803af9da6a98784893e@validator1.bes.dev2.aws.blockchaincloudpoc-develop.com:15041"
+      - "enode://8b56b44e03745ed1700bfed8c4a59a148dc0c1524ec931959f5f0acd410c5234bdbda3b65e9f8f438e5c4a99d35cfa7a2bc36cfd9e6ada48eff9e38a76171c87@validator2.bes.dev2.aws.blockchaincloudpoc-develop.com:15043"
+      - "enode://c4bcfc9a58fd0384e626c2f3113eb29103bb28664d3e5fef5538a61862fc915f849ed824605ca2e89e5993f000083cda565b87f6eaf3a4aa148379a95b5d1410@validator3.bes.dev2.aws.blockchaincloudpoc-develop.com:15045"
+      - "enode://6544f791d651daf8f7302b09e49c4bb02eb98200cb07f0b15333492c1d7177c2ffa02992e24d56cdbc7fdfee07803aa378d82cf9e5e1193257b6523c289040c7@validator4.bes.dev2.aws.blockchaincloudpoc-develop.com:15047"
+      - "enode://ab92d9ac9a726ecc0bcde8c304bc99e5491b4c7d21c5111f3453e22290f53a3894b53dfda201e41247e2f0a65d234032ead065d406f7e06f5f474d0c6494d79b@c-peer1.bes.dev2.aws.blockchaincloudpoc-develop.com:15049"
+      - "enode://a472610633d59654ffa96ed9dcb0363bfa189dbb0150ded184abbd93a5a424b806b18e34f2dbae51d49819d418097a840189663a26f35f749d21b596e30e9517@m-peer1.bes.dev2.aws.blockchaincloudpoc-develop.com:15061"
+   
+
+    liveliness_check:
+      enabled: false
+    healthcheck:
+      readinessthreshold: 100
+      readinesscheckinterval: 5
+ 
+    proxy:
+      provider: ambassador
+      external_url: carrierkav.bes.dev2.aws.blockchaincloudpoc-develop.com
+      p2p: 15049
+      rpc: 15050
+
+    images:
+      node: hyperledger/besu:21.1.1
+      alpineutils: hyperledgerlabs/alpine-utils:1.0     
+
+    node:
+      name: c-peer1
+      consensus: ibft
+      subject: O=Carrier,OU=Carrier,L=51.50/-0.13/London,C=GB
+      mountPath: /opt/besu/data
+      servicetype: ClusterIP
+      imagePullSecret: regcred
+      ports:
+        p2p: 30303
+        rpc: 8545
+        ws: 8546
+
+    tm:
+      type: tessera
+      tls: True
+      
+      url: "https://c-peer1-tessera.carrierkav-bes:8888"
+      
+    storage:
+      storageclassname: awsstorageclass
+      storagesize: 1Gi
+
+    vault:
+      address: http://vault.internal.dev2.aws.blockchaincloudpoc-develop.com:20001
+      secretprefix: secretsv2/data/carrierkav-bes/crypto/c-peer1
+      serviceaccountname: vault-auth
+      keyname: data
+      tmdir: tm
+      tlsdir: tls
+      role: vault-role
+      authpath: besucarrierkav
+
+    genesis: ewogICJjb25maWciOiB7CiAgICAiY2hhaW5JZCI6IDIwMTgsCiAgICAiY29uc3RhbnRpbm9wbGVmaXhibG9jayI6IDAsCiAgICAiY29udHJhY3RTaXplTGltaXQiOiAyMTQ3NDgzNjQ3LAogICAgImliZnQyIjogewogICAgICAiYmxvY2twZXJpb2RzZWNvbmRzIjogMiwKICAgICAgImVwb2NobGVuZ3RoIjogMzAwMDAsCiAgICAgICJyZXF1ZXN0dGltZW91dHNlY29uZHMiOiAxMAogICAgfQogIH0sCiAgIm5vbmNlIjogIjB4MCIsCiAgInRpbWVzdGFtcCI6ICIweDU4ZWU0MGJhIiwKICAiZ2FzTGltaXQiOiAiMHgxZmZmZmZmZmZmZmZmZiIsCiAgImRpZmZpY3VsdHkiOiAiMHgxIiwKICAiZXh0cmFEYXRhIjogIjB4Zjg3ZWEwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMGY4NTQ5NDcyM2UxYWNkZWQ4MDQxYmVkYjc5ZDkxOTE5YTU2ZGFiNWNlNGVhNWM5NDY5ZTFhZGVlMTk1ZjRiYzc4ODQ5MmRhMTgwYTk3MDQzODMyYzQyMDc5NDUwNmY5OWQ3ZTUzODViYTdmOGQ4MmUwMGQ4YTNjMDY1ZmUyNjFiZTA5NGQxODMxZGYwNDNlMDgzMDk2MDA1OGEyMjEwMGNjN2JmMWNjNDJiZjk4MDg0MDAwMDAwMDBjMCIKfQ==
