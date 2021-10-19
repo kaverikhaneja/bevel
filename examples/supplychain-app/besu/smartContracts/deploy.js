@@ -1,6 +1,5 @@
 const path = require("path");
 const Web3 = require('web3'); // Importing web3.js library
-// const EEAClient = require("web3-eea"); // Web3.js wrapper
 const Web3Quorum = require("web3js-quorum");
 const fs = require('fs-extra'); // Importing for writing a file
 const contract = require('./compile'); //Importing the function to compile smart contract
@@ -21,7 +20,7 @@ const numberOfIterations = args['numberOfIteration'] | 100;
 
 args['v'] && console.log(`Creating a web3 provider.......`);
 // const web3 = new EEAClient(new Web3(`${url}`), `${chainId}`);// Creating a provider
-const web3 = new Web3Quorum(new Web3(`${url}`));
+const web3quorum = new Web3Quorum(new Web3(`${url}`));
 var transactionHash = "";  // to store transaction hash to get the transaction receipt 
 var contractAddress = "";
 
@@ -29,18 +28,22 @@ const deploy = async () => {
   args['v'] && console.log(`Compiling the smartcontract.......`);
   const smartContract = await contract.GetByteCode(numberOfIterations, contractPath, contractEntryPoint, contractName); // Converting smart contract to byte code, optimizing the bytecode conversion for numer of Iterations
   args['v'] && console.log(`Smartcontract converted into bytecode and abi`);
+  // create new account address from the private key
+  const account = await web3quorum.eth.accounts.privateKeyToAccount(`0x${privateKey}`);
   const contractOptions = {
     data: `0x${smartContract.bytecode}`, // contract binary
     privateFrom: `${orionPublicKey}`,
     privateFor: privateFor,
     privateKey: `${privateKey}`
+    // restriction: restricted
   };
   args['v'] && console.log(`Created the contract options`);
   await deploySmartContract(contractOptions)
     .then(hash => {
       transactionHash = hash;
       args['v'] && console.log(`Transaction hash for the deployment is ${hash}`);
-      web3.priv.getTransactionReceipt(transactionHash, `${orionPublicKey}`)
+      // web3.priv.getTransactionReceipt(transactionHash)
+       web3quorum.priv.waitForTransactionReceipt(transactionHash)
         .then(data => {
           contractAddress = data.contractAddress
           console.log(contractAddress);
@@ -59,10 +62,11 @@ const deploy = async () => {
 }
 
 const deploySmartContract = async (contractOptions) => {
-  args['v'] && console.log(`trying to create a new account from private key`);
-  const newAccount = await web3.eth.accounts.privateKeyToAccount(`0x${privateKey}`) // Creating new ethereum account from the private key
+  // args['v'] && console.log(`trying to create a new account from private key`);
+  // const newAccount = await web3.eth.accounts.privateKeyToAccount(`0x${privateKey}`) // Creating new ethereum account from the private key
   args['v'] && console.log(`Deploying the smartcontract......`);
-  return web3.priv.generateAndSendRawTransaction(contractOptions); // deploy smartcontract with contractoptions
+  return web3quorum.priv.generateAndSendRawTransaction(contractOptions); // deploy smartcontract with contractoptions
+
 }
 
 

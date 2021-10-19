@@ -1,0 +1,132 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ethsigner
+  namespace: manufacturerkav-bes
+  labels:
+    app.kubernetes.io/name: ethsigner
+    # helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    # app.kubernetes.io/managed-by: {{ .Release.Service }}
+    # app.kubernetes.io/instance: {{ .Release.Name }}
+    app: ethsigner
+spec:
+  # selector:
+  #   matchLabels:
+  #     app: ethsigner
+  #     app.kubernetes.io/name: ethsigner
+  #     # helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+  #     # app.kubernetes.io/instance: {{ .Release.Name }}
+  # strategy:
+  #   type: Recreate
+  #   rollingUpdate: null
+  backoffLimit: 6
+  template:
+    metadata:
+      labels:
+        app: ethsigner
+        app.kubernetes.io/name: ethsigner
+        #helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+        #app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      restartPolicy: OnFailure
+      serviceAccountName: vault-auth
+      volumes:
+      - name: privatekey
+        configMap:
+          name: accountprivatekey
+          items:
+          - key: key
+            path: key
+          - key: password
+            path: password
+      - name: passwordfile
+        emptyDir: 
+          medium: Memory
+      # initContainers:
+      # - name: account-secret
+      #   image: index.docker.io/hyperledgerlabs/alpine-utils:1.0
+      #   imagePullPolicy: Always
+      #   volumeMounts:
+      #   - name: passwordfile
+      #     mountPath: /password
+      #   - name: privatekey
+      #     mountPath: /keyfile
+      #   env:
+      #   - name: MOUNT_PATH
+      #     value: "/password"
+      #   - name: VAULT_ADDR
+      #     value: http://vault.internal.dev2.aws.blockchaincloudpoc-develop.com:20001
+      #   - name: KUBERNETES_AUTH_PATH
+      #     value: besumanufacturerkav
+      #   - name: VAULT_APP_ROLE
+      #     value: vault-role
+      #   - name: VAULT_SECRET_PREFIX
+      #     value: secretsv2/data/manufacturerkav-bes/crypto/m-peer1/data/
+      #   - name: KEYNAME
+      #     value: password
+      #   command: ["sh", "-c"]
+      #   args:
+      #   - |-
+      #     #!/usr/bin/env sh
+          
+      #     validateVaultResponse () {
+      #       if echo ${2} | grep "errors"; then
+      #         echo "ERROR: unable to retrieve ${1}: ${2}"
+      #         exit 1
+      #       fi
+      #       if  [ "$3" == "LOOKUPSECRETRESPONSE" ]
+      #       then
+      #         http_code=$(curl -sS -o /dev/null -w "%{http_code}" \
+      #         --header "X-Vault-Token: ${VAULT_CLIENT_TOKEN}" \
+      #         ${VAULT_ADDR}/v1/${vault_secret_key})
+      #         curl_response=$?
+      #         if test "$http_code" != "200" ; then
+      #             echo "Http response code from Vault - $http_code"
+      #             if test "$curl_response" != "0"; then
+      #                echo "Error: curl command failed with error code - $curl_response"
+      #                exit 1
+      #             fi
+      #         fi
+      #       fi
+      #     }
+
+      #     KUBE_SA_TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
+      #     echo "Getting secrets from Vault Server: ${VAULT_ADDR}"
+      #     #Login to Vault to get an approle token
+      #     VAULT_CLIENT_TOKEN=$(curl -sS --request POST ${VAULT_ADDR}/v1/auth/${KUBERNETES_AUTH_PATH}/login \
+      #       -H "Content-Type: application/json" \
+      #       -d '{"role":"'"${VAULT_APP_ROLE}"'","jwt":"'"${KUBE_SA_TOKEN}"'"}' | \
+      #       jq -r 'if .errors then . else .auth.client_token end')
+      #     validateVaultResponse 'vault login token' "${VAULT_CLIENT_TOKEN}"
+      #     echo "logged into the vault"
+
+      #     mkdir -p ${MOUNT_PATH}
+
+      #     vault_secret_key="${VAULT_SECRET_PREFIX}/${KEYNAME}" 
+      #     echo "Getting password from $vault_secret_key" 
+      #     LOOKUP_SECRET_RESPONSE=$(curl -sS \
+      #       --header "X-Vault-Token:${VAULT_CLIENT_TOKEN}" \
+      #       ${VAULT_ADDR}/v1/${vault_secret_key} | \
+      #       jq -r 'if .errors then . else . end')
+      #     validateVaultResponse "password (${vault_secret_key})" "${LOOKUP_SECRET_RESPONSE}" "LOOKUPSECRETRESPONSE" 
+      #     password=$(echo ${LOOKUP_SECRET_RESPONSE} | jq -r '.data.data["password"]') 
+      #     echo ${password}
+      #     echo "${password}" > ${MOUNT_PATH}/password
+      containers:     
+      - name: ethsigner
+        image: pegasyseng/ethsigner:21.3
+        imagePullPolicy: Always
+        volumeMounts:
+        - name: privatekey
+          mountPath: /keyfile
+        - name: privatekey
+          mountPath: /password 
+        env:
+        - name: MOUNT_PATH
+          value: "/password"
+        command: ["sh", "-c"]
+        args:
+        - |-
+          apt-get update && apt-get install curl -y;
+          /opt/ethsigner/bin/ethsigner --chain-id=2018 --downstream-http-port=8545 --http-listen-port=8090 --downstream-http-host=m-peer1.manufacturerkav-bes file-based-signer --key-file=/keyfile/key --password-file=/password/password
+          

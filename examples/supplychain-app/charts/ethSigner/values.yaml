@@ -1,0 +1,50 @@
+# Default values for nodechart.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+# This one is just a demo file, the file to install the helm chart will be created through
+# ANSIBLE with the values.tpl file that is in the same folder that this file. 
+
+# This will be the name of the node to create
+nodeName: ethsigner
+metadata:
+    namespace: manufacturerkav-bes
+
+# The number of replicas the node will have
+replicaCount: 1
+
+deployment:
+    #   annotations:
+    #     key: "value"
+    annotations: {}
+vault:
+    #Provide the Vault Address from where secrets will be read
+    #Eg. address: http://vault.internal.demo.aws.blockchaincloudpoc.com:9000
+    address: http://vault.internal.dev2.aws.blockchaincloudpoc-develop.com:20001
+    #Provide the Vault secret path from where secrets will be read
+    #Eg. secretprefix: secret/org1/smartContracts/ 
+    secretprefix: secretsv2/data/manufacturerkav-bes/crypto/m-peer1/data
+    #Provide the serviceaccount which is verified with Vault
+    #Eg. serviceaccountname: vault-auth
+    serviceaccountname: vault-auth
+    #Provide the key name from where quorum secrets will be read
+    #Eg. keyname: General
+    keyname: password
+    #Provide the service role which is verified with Vault
+    #Eg. role: vault-role
+    role: vault-role
+    #Provide the Vault auth-path which is created for the namespace
+    #Eg. authpath: quorumorg1
+    authpath: besumanufacturerkav
+images:
+    ethSigner: consensys/ethsigner:21.3
+    alpineutils: index.docker.io/hyperledgerlabs/alpine-utils:1.0
+# # This will group the values of the expressapp
+# expressapp:
+#     #This defines the service type of the node
+#     serviceType: ClusterIP
+#     nodePorts:
+#         port: 3000
+#         targetPort: 3000
+#         name: tcp
+#     # The environment variables that will store the port to be working on and the end point to ask for requests
+#     #Eg. apiUrl: api.blockchaincloudpoc.com
