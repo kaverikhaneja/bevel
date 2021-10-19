@@ -1,7 +1,6 @@
 // const path = require("path");
-// const Web3 = require('web3'); // Importing web3.js library
-// const EEAClient = require("web3-eea"); // Web3.js wrapper
-// const Web3Quorum = require('web3js-quorum');
+const Web3 = require('web3'); // Importing web3.js library
+const Web3Quorum = require('web3js-quorum');
 const fs = require('fs-extra'); // Importing for writing a file
 const contract = require('./compile'); //Importing the function to compile smart contract
 const minimist = require('minimist'); // Import the library for the arguments
@@ -18,128 +17,78 @@ const privateFor = [];
 const outputFolder = args['output'] == true ? args['output'] : './build';
 args['privateFor'].split(',').forEach(item => privateFor.push(item));
 const numberOfIterations = args['numberOfIteration'] | 100;
-// const tm_url = args['tm_url']  // url of tm node
 
 args['v'] && console.log(`Creating a web3 provider.......`);
-const Web3 = require("web3");
-// const EEAClient = require("web3-eea"); // Web3.js wrapper
-// const web3 = new EEAClient(new Web3(`${url}`), `${chainId}`);// Creating a provider
-const Web3Quorum = require("web3js-quorum");
-const web3 = new Web3Quorum(new Web3(`${url}`));
+const web3quorum = new Web3Quorum(new Web3(`${url}`));
 
-var Tx = require('ethereumjs-tx').Transaction;
-
-// var transactionHash = ""; // to store transaction hash to get the transaction receipt 
-// var contractAddress = "";
-
+var transactionHash = ""; // to store transaction hash to get the transaction receipt 
+var contractAddress = "";
 
 const deploy = async () => {
   args['v'] && console.log(`Compiling the smartcontract.......`);
   const smartContract = await contract.GetByteCode(numberOfIterations, contractPath, contractEntryPoint, contractName); // Converting smart contract to byte code, optimizing the bytecode conversion for numer of Iterations
   args['v'] && console.log(`Smartcontract converted into bytecode and abi`);
   
-  const account = web3.eth.accounts.privateKeyToAccount(privateKey);
+  const account = web3quorum.eth.accounts.privateKeyToAccount(privateKey);
   console.log(account);
 
   const contractOptions = {
-    from:  account.address,                
-    // chainId: 2018,
-    to: null,
     data: `0x${smartContract.bytecode}`, // contract binary
     privateFrom: `${orionPublicKey}`,    // tm address of the sender
     privateFor: privateFor,              // tm addresses of recipients
     privateKey: `${privateKey}`,
-    gas: 0
   };
 
-  const tx = new Tx(contractOptions);
-  // var encodedPrivateKey = new Buffer.from(privateKey.substring(2), "hex");
-  
-  tx.sign(Buffer.from(account.privateKey.substring(2), "hex"));
+  args['v'] && console.log(`Created the contract options`);
 
-  var serializedTx = tx.serialize();
-  const pTx = await web3.eth.sendSignedTransaction('0x' + serializedTx.toString('hex').toString("hex"));
+  await deploySmartContract(contractOptions)
+    .then(hash => {
+      transactionHash = hash;
+      args['v'] && console.log(`Transaction hash for the deployment is ${hash}`);
+      web3quorum.priv.waitForTransactionReceipt(transactionHash)
+        .then(data => {
+          contractAddress = data.contractAddress
+          console.log(contractAddress);
+          args['v'] && console.log(`Transaction receipt:`); //comment for large smartcontracts
+          args['v'] && console.log(data); //comment for large smartcontracts
+        });
+    })
+    .catch(e => {
+      console.log("Error")
+      args['v'] && console.log(`Encountered error:  ${e}`);
+    }); 
 
-  // const raw = '0x' + serializedTx.toString('hex');
-  // return web3.eth.sendSignedTransaction(raw);
-  // return web3.eth.sendTransaction(raw);
-  console.log("tx transactionHash: " + pTx.transactionHash);
-  console.log("tx contractAddress: " + pTx.contractAddress);
-  return pTx;
-
-  // args['v'] && console.log(`Created the contract options`);
-
-  // await deploySmartContract(contractOptions)
-  //   .then(hash => {
-  //     transactionHash = hash;
-  //     args['v'] && console.log(`Transaction hash for the deployment is ${hash}`);
-  //     // web3.priv.getTransactionReceipt(transactionHash)
-  //     web3.priv.waitForTransactionReceipt(transactionHash)
-  //       .then(data => {
-  //         contractAddress = data.contractAddress
-  //         console.log(contractAddress);
-  //         args['v'] && console.log(`Transaction receipt:`); //comment for large smartcontracts
-  //         args['v'] && console.log(data); //comment for large smartcontracts
-  //       });
-  //   })
-  //   .catch(e => {
-  //     console.log("Error")
-  //     args['v'] && console.log(`Encountered error:  ${e}`);
-  //   }); 
-
-  // args['v'] && console.log(`writing the smartcontract binary and abi to build folder......`);
-  // PostDeployKeeping(smartContract.abi, smartContract.bytecode) // For writing the ABI and the smartContract bytecode in build 
+  args['v'] && console.log(`writing the smartcontract binary and abi to build folder......`);
+  PostDeployKeeping(smartContract.abi, smartContract.bytecode) // For writing the ABI and the smartContract bytecode in build 
 
 };
 
-// const deploySmartContract = async (contractOptions) => {
-//   // args['v'] && console.log(`trying to create a new account from private key`);
-//   // const newAccount = await web3.eth.accounts.privateKeyToAccount(`0x${privateKey}`) // Creating new ethereum account from the private key
-//   // args['v'] && console.log(newAccount);
-//   args['v'] && console.log(`Deploying the smartcontract......`);
-//   // return web3.eea_sendTransaction(contractOptions)
-//   // // return web3.eea.sendRawTransaction(contractOptions);
-//   // return web3.priv.generateAndSendRawTransaction(contractOptions); // deploy smartcontract with contractoptions
-//   const newAccount = await web3.eth.accounts.privateKeyToAccount(`0x${privateKey}`)
-//   // sign the transaction
-//   const tx = new Tx(contractOptions);
-//   // var encodedPrivateKey = new Buffer.from(privateKey.substring(2), "hex");
-  
-//   tx.sign(Buffer.from(newAccount.privateKey.substring(2), "hex"));
+const deploySmartContract = async (contractOptions) => {
+  args['v'] && console.log(`Deploying the smartcontract......`);
+  return web3quorum.priv.generateAndSendRawTransaction(contractOptions); // deploy smartcontract with contractoptions
+}
 
-//   var serializedTx = tx.serialize();
-//   const pTx = await web3.eth.sendSignedTransaction('0x' + serializedTx.toString('hex').toString("hex"));
-
-//   // const raw = '0x' + serializedTx.toString('hex');
-//   // return web3.eth.sendSignedTransaction(raw);
-//   // return web3.eth.sendTransaction(raw);
-//   console.log("tx transactionHash: " + pTx.transactionHash);
-//   console.log("tx contractAddress: " + pTx.contractAddress);
-//   return pTx;
-// }
-
-
-// const PostDeployKeeping = (abi, bytecode) => {
-//   try {
-//     if (!fs.existsSync(outputFolder)) {
-//       fs.mkdirSync(outputFolder, 0744); // try to create a build folder if not exists
-//       args['v'] && console.log(`build folder is created`);
-//     }
-//   } catch (e) {
-//     console.log("Error", e)
-//   }
-//   try {
-//     fs.writeFileSync("./build/abi.json", JSON.stringify(abi)) // writing the ABI file
-//     args['v'] && console.log(`abi is written to abi.json file`);
-//   } catch (err) {
-//     console.error(err)
-//   }
-//   try {
-//     fs.writeFileSync("./build/bin.json", JSON.stringify(bytecode)) // writing binary code to the file
-//     args['v'] && console.log(`bytecode is written to the bin.json file.`);
-//   } catch (err) {
-//     console.error(err)
-//   }
-// }
+const PostDeployKeeping = (abi, bytecode) => {
+  try {
+    if (!fs.existsSync(outputFolder)) {
+      fs.mkdirSync(outputFolder, 0744); // try to create a build folder if not exists
+      args['v'] && console.log(`build folder is created`);
+    }
+  } catch (e) {
+    console.log("Error", e)
+  }
+  try {
+    fs.writeFileSync("./build/abi.json", JSON.stringify(abi)) // writing the ABI file
+    args['v'] && console.log(`abi is written to abi.json file`);
+  } catch (err) {
+    console.error(err)
+  }
+  try {
+    fs.writeFileSync("./build/bin.json", JSON.stringify(bytecode)) // writing binary code to the file
+    args['v'] && console.log(`bytecode is written to the bin.json file.`);
+  } catch (err) {
+    console.error(err)
+  }
+}
 
 deploy() // Calling the deploy function

@@ -12,6 +12,10 @@
     loop_var: org
   when: org.type != "validator"
 
+# # put ethSigner keyFile password in vault
+# - name: "Storing ethsigner keyFile password in vault"
+#   shell: vault kv put {{ vault.secret_path | default('secretsv2') }}/{{ component_ns }}/crypto/{{ peer.name }}/data/password password="Password"
+
 # Looping on the peers and finding out the peer with a chaincode section
 - name: "Deploying the chaincode for peer {{ organization_data.name | lower }}"
   include_tasks: nested_deploy.yaml
