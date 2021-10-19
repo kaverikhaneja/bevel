@@ -1,6 +1,7 @@
 const path = require("path");
 const Web3 = require('web3'); // Importing web3.js library
-const EEAClient = require("web3-eea"); // Web3.js wrapper
+// const EEAClient = require("web3-eea"); // Web3.js wrapper
+const Web3Quorum = require("web3js-quorum");
 const fs = require('fs-extra'); // Importing for writing a file
 const contract = require('./compile'); //Importing the function to compile smart contract
 const minimist = require('minimist'); // Import the library for the arguments
@@ -19,7 +20,8 @@ args['privateFor'].split(',').forEach(item => privateFor.push(item));
 const numberOfIterations = args['numberOfIteration'] | 100;
 
 args['v'] && console.log(`Creating a web3 provider.......`);
-const web3 = new EEAClient(new Web3(`${url}`), `${chainId}`);// Creating a provider
+// const web3 = new EEAClient(new Web3(`${url}`), `${chainId}`);// Creating a provider
+const web3 = new Web3Quorum(new Web3(`${url}`));
 var transactionHash = "";  // to store transaction hash to get the transaction receipt 
 var contractAddress = "";
 
@@ -60,7 +62,7 @@ const deploySmartContract = async (contractOptions) => {
   args['v'] && console.log(`trying to create a new account from private key`);
   const newAccount = await web3.eth.accounts.privateKeyToAccount(`0x${privateKey}`) // Creating new ethereum account from the private key
   args['v'] && console.log(`Deploying the smartcontract......`);
-  return web3.eea.sendRawTransaction(contractOptions); // deploy smartcontract with contractoptions
+  return web3.priv.generateAndSendRawTransaction(contractOptions); // deploy smartcontract with contractoptions
 }
 
 
