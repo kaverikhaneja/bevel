@@ -125,5 +125,9 @@ spec:
         args:
         - |-
           apt-get update && apt-get install curl -y;
-          /opt/ethsigner/bin/ethsigner --chain-id=2018 --downstream-http-port=8545 --http-listen-port=8090 --downstream-http-host=m-peer1.manufacturerkav-bes file-based-signer --key-file=/keyfile/key --password-file=${MOUNT_PATH}/password
-          
+          /opt/ethsigner/bin/ethsigner --chain-id=2018 --downstream-http-port=8545 --downstream-http-host=m-peer1.manufacturerkav-bes --http-listen-port=8090 --http-listen-host=0.0.0.0  --http-cors-origins="*" file-based-signer --key-file=/keyfile/key --password-file=${MOUNT_PATH}/password
+        ports:
+          - name: json-rpc
+            containerPort: 8090
+            protocol: TCP  
+            

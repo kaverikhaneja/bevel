@@ -1,19 +1,31 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Values.nodeName }}
-  namespace: {{ .Values.metadata.namespace }}
-  labels:
-    run: {{ .Values.nodeName }}
-    app.kubernetes.io/name: {{ .Values.nodeName }}
-    # helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
-    # app.kubernetes.io/managed-by: {{ .Release.Service }}
-    # app.kubernetes.io/instance: {{ .Release.Name }} 
+  namespace: manufacturerkav-bes
+  annotations:
+    app: ethsignerProxy-json-rpc
+    version: '1'
+    # {{- if eq $.Values.proxy.provider "ambassador" }}
+    getambassador.io/config: |
+      apiVersion: ambassador/v2
+      kind: TCPMapping
+      name: ethsignerProxy-json-rpc
+      port: 15062
+      service: ethsigner.manufacturerkav-bes:8090
+    # {{- end }}
+  creationTimestamp: null
+  # labels:
+  #   app.kubernetes.io/name: {{ .Values.node.name }}
+  #   helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+  #   app.kubernetes.io/managed-by: {{ .Release.Service }}
+  #   app.kubernetes.io/instance: {{ .Release.Name }} 
+  #   {{- include "labels.custom" . | nindent 2 }}
+  name: ethsigner
 spec:
-  selector:
-    app: {{ .Values.nodeName }}
+  type: ClusterIP
   ports:
-  - port: 80
-    targetPort: 8090
+  - name: json-rpc
     protocol: TCP
-    
+    port: 8090
+    targetPort: 8090
+ 
