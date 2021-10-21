@@ -58,20 +58,17 @@
     loop_var: peer
   when: peer.expressapi is defined
 
-# Fetch node addresses from vault
-- name: Getting node addresses from vault
-  shell: |
-    vault kv get -field=nodeAddress {{ vault.secret_path | default('secret') }}/{{ component_ns }}/crypto/{{ peer.name }}/data
-  environment:
-    VAULT_ADDR: "{{ vault.url }}"
-    VAULT_TOKEN: "{{ vault.root_token }}"
-  register: node_address
-  ignore_errors: yes
+# Set node_list to empty
+- name: Set node_address_list to []
+  set_fact:
+    node_address_list: []
+  
+- name: Get member node data
+  include_tasks: nested_main.yaml
   loop: "{{ organization_data.services.peers }}"
   loop_control:
     loop_var: peer
-
-
+ 
 # # Update the postman json file with account ids
 # This task gets the account address
 # - name: Get geth account 
@@ -99,10 +96,13 @@
 #     account: "{{ account_id.results[0].content | from_json | json_query('result') }}"
     
 
-# # Replace accountid in postman env file
-# - name: Replace accountid in postman env file
-#   replace:
-#     # path: "{{ playbook_dir }}/../../../tests/SupplychainDemo_besu.postman_environment.json"
-#     path: "/home/kaveri/blockchain-automation-framework/examples/supplychain-app/tests/SupplychainDemo_besu.postman_environment copy.json"
-#     regexp: "{{ organization_data.name | lower }}_account"
-#     replace: "{{ account_id.results[0] }}"
+# Replace accountid in postman env file
+- name: Replace accountid in postman env file
+  replace:
+    # path: "{{ playbook_dir }}/../../../tests/SupplychainDemo_besu.postman_environment.json"
+    path: "/home/kaveri/blockchain-automation-framework/examples/supplychain-app/tests/SupplychainDemo_besu.postman_environment_copy.json"
+    regexp: "{{ organization_data.name | lower }}_account"
+    replace: "{{ node_info.node_address }}"
+  loop: "{{ node_address_list }}"
+  loop_control:
+    loop_var: node_info

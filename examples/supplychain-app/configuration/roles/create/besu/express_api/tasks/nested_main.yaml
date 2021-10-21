@@ -1,0 +1,15 @@
+# Fetch node addresses from vault
+- name: Getting node addresses from vault
+  shell: |
+    vault kv get -field=nodeAddress {{ vault.secret_path | default('secret') }}/{{ component_ns }}/crypto/{{ peer.name }}/data
+  environment:
+    VAULT_ADDR: "{{ vault.url }}"
+    VAULT_TOKEN: "{{ vault.root_token }}"
+  register: node_address
+  ignore_errors: yes
+  
+# Get information about each member node present in network.yaml and store it as a list of org,node
+- name: Get member node data
+  set_fact:
+    node_address_list={{ node_address_list|default([]) + [ {'peer_name':peer.name, 'node_address':node_address} ] }}
+  
