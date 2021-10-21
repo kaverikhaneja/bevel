@@ -111,6 +111,10 @@
     check: address['stdout_lines'][0]
   when: address['stdout_lines'][1] is defined and address['stdout_lines'][0] != "Error"
 
+- name:  Checking contract_address
+  debug: 
+    msg: "{{contract_address}}"
+
 ############################################################################################
 # Fail the playbook if check is not defined
 - fail:
