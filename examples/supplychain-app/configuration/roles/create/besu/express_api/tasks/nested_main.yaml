@@ -9,9 +9,9 @@
   ignore_errors: yes
 
 
-- name:  Checking node_address
-  debug: 
-    msg: "{{node_address}}"
+# - name:  Checking node_address
+#   debug: 
+#     msg: "{{node_address}}"
   
 # Get information about each member node present in network.yaml and store it as a list of org,node
 - name: Get member node data
