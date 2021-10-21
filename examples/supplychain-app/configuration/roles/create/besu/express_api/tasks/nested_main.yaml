@@ -5,7 +5,7 @@
   environment:
     VAULT_ADDR: "{{ component_vault.url }}"
     VAULT_TOKEN: "{{ component_vault.root_token }}"
-  register: "{{ result }}"
+  register: result 
   ignore_errors: yes
 
 
