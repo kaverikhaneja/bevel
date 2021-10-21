@@ -1,10 +1,10 @@
 # Fetch node addresses from vault
 - name: Getting node addresses from vault
   shell: |
-    vault kv get -field=nodeAddress {{ vault.secret_path | default('secret') }}/{{ component_ns }}/crypto/{{ peer.name }}/data
+    vault kv get -field=nodeAddress {{ component_vault.secret_path | default('secret') }}/{{ component_ns }}/crypto/{{ peer.name }}/data
   environment:
-    VAULT_ADDR: "{{ vault.url }}"
-    VAULT_TOKEN: "{{ vault.root_token }}"
+    VAULT_ADDR: "{{ component_vault.url }}"
+    VAULT_TOKEN: "{{ component_vault.root_token }}"
   register: node_address
   ignore_errors: yes
   
