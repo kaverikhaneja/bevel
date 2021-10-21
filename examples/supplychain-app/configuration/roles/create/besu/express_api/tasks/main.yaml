@@ -58,6 +58,20 @@
     loop_var: peer
   when: peer.expressapi is defined
 
+# Fetch node addresses from vault
+- name: Getting node addresses from vault
+  shell: |
+    vault kv get -field=nodeAddress {{ vault.secret_path | default('secret') }}/{{ component_ns }}/crypto/{{ peer.name }}/data
+  environment:
+    VAULT_ADDR: "{{ vault.url }}"
+    VAULT_TOKEN: "{{ vault.root_token }}"
+  register: node_address
+  ignore_errors: yes
+  loop: "{{ organization_data.services.peers }}"
+  loop_control:
+    loop_var: peer
+
+
 # # Update the postman json file with account ids
 # This task gets the account address
 # - name: Get geth account 
