@@ -5,7 +5,7 @@
   environment:
     VAULT_ADDR: "{{ component_vault.url }}"
     VAULT_TOKEN: "{{ component_vault.root_token }}"
-  register: node_address
+  register: "{{ result }}"
   ignore_errors: yes
 
 
@@ -16,6 +16,5 @@
 # Get information about each member node present in network.yaml and store it as a list of org,node
 - name: Get member node data
   set_fact:
-    node_address = "{{ node_address.stdout }}"
-    node_address_list={{ node_address_list|default([]) + [ {'peer_name':peer.name, 'node_address':node_address} ] }}
+    node_address_list={{ node_address_list|default([]) + [ {'peer_name':peer.name, 'node_address':result.stdout} ] }}
   
