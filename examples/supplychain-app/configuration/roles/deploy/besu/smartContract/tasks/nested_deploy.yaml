@@ -113,7 +113,7 @@
 
 - name:  Checking contract_address
   debug: 
-    msg: "{{contract_address}}"
+    msg: "{{contract_address[2:]}}"
 
 ############################################################################################
 # Fail the playbook if check is not defined
