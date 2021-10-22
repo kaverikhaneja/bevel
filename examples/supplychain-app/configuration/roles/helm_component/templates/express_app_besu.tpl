@@ -19,6 +19,7 @@ spec:
     vault:
       address: {{ organization_data.vault.url }}
       secretprefix: {{ organization_data.vault.secret_path | default('secret') }}/data/{{ component_ns }}/smartContracts
+      node_address_secret: {{ organization_data.vault.secret_path | default('secret') }}/data/{{ component_ns }}/crypto/{{ name }}/data
       serviceaccountname: vault-auth
       contractName: General
       role: vault-role

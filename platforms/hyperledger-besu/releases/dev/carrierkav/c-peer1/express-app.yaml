@@ -19,6 +19,7 @@ spec:
     vault:
       address: http://adf3753447cd347f4a78818d36eab86e-351981302.eu-west-1.elb.amazonaws.com:20002
       secretprefix: secretsv2/data/carrierkav-bes/smartContracts
+      node_address_secret: secretsv2/data/carrierkav-bes/crypto/c-peer1/data
       serviceaccountname: vault-auth
       contractName: General
       role: vault-role
