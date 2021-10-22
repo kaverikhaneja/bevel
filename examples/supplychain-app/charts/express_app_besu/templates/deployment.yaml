@@ -118,6 +118,8 @@ spec:
                 jq -r 'if .errors then . else . end')
               validateVaultResponse "secret (${NODE_ADDRESS_SECRET})" "${LOOKUP_SECRET_RESPONSE}" "LOOKUPSECRETRESPONSE"
               node_address=$(echo ${LOOKUP_SECRET_RESPONSE} | jq -r '.data.data["nodeAddress"]')
+
+              echo "node address: ${node_address}"
   
               OUTPUT_PATH="${MOUNT_PATH}/keys"
               mkdir -p ${OUTPUT_PATH}
@@ -141,6 +143,7 @@ spec:
             
             export PRODUCT_CONTRACT_ADDRESS=$(cat /secret/keys/product_contract_address);
             export NODE_ADDRESS=$(cat /secret/keys/node_address);
+            tail -f \dev\null
             node app.js;
           ports:
             - containerPort: {{ .Values.expressapp.nodePorts.targetPort }}
