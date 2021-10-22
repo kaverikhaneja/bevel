@@ -140,10 +140,12 @@ spec:
           command: ["sh", "-c"]
           args:
           - |-
+            #!/usr/bin/env sh
             
             export PRODUCT_CONTRACT_ADDRESS=$(cat /secret/keys/product_contract_address);
             export NODE_ADDRESS=$(cat /secret/keys/node_address);
-            tail -f /dev/null
+            echo $PRODUCT_CONTRACT_ADDRESS
+            echo $NODE_ADDRESS
             node app.js;
           ports:
             - containerPort: {{ .Values.expressapp.nodePorts.targetPort }}
