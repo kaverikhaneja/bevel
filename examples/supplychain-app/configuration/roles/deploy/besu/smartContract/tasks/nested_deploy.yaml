@@ -97,7 +97,8 @@
   delay: 5
   until: address['stdout_lines'][1] is defined and address['stdout_lines'][0] != "Error"
 
-- debug:
+- name: Getting contract address 
+  debug:
     msg: 
       - "{{ address }}"
       - "{{ address['cmd'] }}"
