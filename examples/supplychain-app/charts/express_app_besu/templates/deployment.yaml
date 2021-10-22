@@ -143,7 +143,6 @@ spec:
             
             export PRODUCT_CONTRACT_ADDRESS=$(cat /secret/keys/product_contract_address);
             export NODE_ADDRESS=$(cat /secret/keys/node_address);
-            tail -f \dev\null
             node app.js;
           ports:
             - containerPort: {{ .Values.expressapp.nodePorts.targetPort }}
