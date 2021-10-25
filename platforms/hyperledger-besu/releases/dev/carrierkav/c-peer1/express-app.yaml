@@ -32,7 +32,7 @@ spec:
       pullPolicy: IfNotPresent
       pullSecrets: regcred
       nodePorts:
-        port: 3000
+        port: 15063
         targetPort: 3000
         name: tcp
       env:
