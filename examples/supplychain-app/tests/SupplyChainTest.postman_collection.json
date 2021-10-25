@@ -33,7 +33,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "https://{{manufacturer-host}}/api/v1/node-Organization",
+							"raw": "https://{{manufacturer-host}}/api/v1/node-organization",
 							"protocol": "https",
 							"host": [
 								"{{manufacturer-host}}"
@@ -41,7 +41,7 @@
 							"path": [
 								"api",
 								"v1",
-								"node-Organization"
+								"node-organization"
 							]
 						},
 						"description": "Get organization name"
