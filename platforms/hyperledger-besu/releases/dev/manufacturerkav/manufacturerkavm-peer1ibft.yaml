@@ -1,0 +1,76 @@
+apiVersion: helm.fluxcd.io/v1
+kind: HelmRelease
+metadata:
+  name: manufacturerkavm-peer1ibft
+  namespace: manufacturerkav-bes
+  annotations:
+    flux.weave.works/automated: "false"
+spec:
+  releaseName: manufacturerkavm-peer1ibft
+  chart:
+    git: https://github.com/kaverikhaneja/blockchain-automation-framework.git
+    ref: feature-1562
+    path: platforms/hyperledger-besu/charts/node_besu
+  values:
+    metadata:
+      namespace: manufacturerkav-bes
+      labels:
+    replicaCount: 1
+    staticnodes:
+      - "enode://4a6d7415267f6096076ac156cfa69384bfbc16500d8cb9fa75969456c2a05d8f045db0442c3ac2b4964b9a83637c8a86f87c8a9b24e251d3c67150cc7c4e6637@validator1.bes.dev2.aws.blockchaincloudpoc-develop.com:15041"
+      - "enode://8a2a5137ed84ec8500680c090d8de7543412c2557b15ac3e563db8a386a12581c9afcbde619ac0946bb98054202dbc8f462f9bf1bcb5cab47f2c03b088bca825@validator2.bes.dev2.aws.blockchaincloudpoc-develop.com:15043"
+      - "enode://0ca0ec3338093f9dff30c60a76880ff9e73fcc5b150c7be7e76a7630d1192e4f55eda1e8f5ef73a3b8bc9c2fe452cbfc725c310f88e07cd447f572113b0532f3@validator3.bes.dev2.aws.blockchaincloudpoc-develop.com:15045"
+      - "enode://d09801f88bf2234c5a02d182c4556abd8b2264d2dab2ae67e716740009c317a7719f76ad116cba941a62741f54d002b2061cd399f21094e51a53e18decf288f9@validator4.bes.dev2.aws.blockchaincloudpoc-develop.com:15047"
+      - "enode://258d76d2a5234cf6faabbab9b521589664be90765c89d8c9c8cb8718ae7884cbb480718576e13ae7fdc14d22287b34d122dcc227ae4f7f6c2ae6cd6c3b53a21f@c-peer1.bes.dev2.aws.blockchaincloudpoc-develop.com:15049"
+      - "enode://25a26792ebe87b1c6cca856c339c0ba7c593e36555c42063e729fae720d542ffaf73fbd5326bcfade2c3be2645cba6b4ba0123029eac069e5cf85c186235d75a@m-peer1.bes.dev2.aws.blockchaincloudpoc-develop.com:15061"
+   
+
+    liveliness_check:
+      enabled: false
+    healthcheck:
+      readinessthreshold: 100
+      readinesscheckinterval: 5
+ 
+    proxy:
+      provider: ambassador
+      external_url: manufacturerkav.bes.dev2.aws.blockchaincloudpoc-develop.com
+      p2p: 15061
+      rpc: 15062
+
+    images:
+      node: hyperledger/besu:21.1.1
+      alpineutils: hyperledgerlabs/alpine-utils:1.0     
+
+    node:
+      name: m-peer1
+      consensus: ibft
+      subject: O=Manufacturer,OU=Manufacturer,L=47.38/8.54/Zurich,C=CH
+      mountPath: /opt/besu/data
+      servicetype: ClusterIP
+      imagePullSecret: regcred
+      ports:
+        p2p: 30303
+        rpc: 8545
+        ws: 8546
+
+    tm:
+      type: tessera
+      tls: True
+      
+      url: "https://m-peer1-tessera.manufacturerkav-bes:8888"
+      
+    storage:
+      storageclassname: awsstorageclass
+      storagesize: 1Gi
+
+    vault:
+      address: http://adf3753447cd347f4a78818d36eab86e-351981302.eu-west-1.elb.amazonaws.com:20002
+      secretprefix: secretsv2/data/manufacturerkav-bes/crypto/m-peer1
+      serviceaccountname: vault-auth
+      keyname: data
+      tmdir: tm
+      tlsdir: tls
+      role: vault-role
+      authpath: besumanufacturerkav
+
+    genesis: ewogICJjb25maWciOiB7CiAgICAiY2hhaW5JZCI6IDIwMTgsCiAgICAiY29uc3RhbnRpbm9wbGVmaXhibG9jayI6IDAsCiAgICAiY29udHJhY3RTaXplTGltaXQiOiAyMTQ3NDgzNjQ3LAogICAgImliZnQyIjogewogICAgICAiYmxvY2twZXJpb2RzZWNvbmRzIjogMiwKICAgICAgImVwb2NobGVuZ3RoIjogMzAwMDAsCiAgICAgICJyZXF1ZXN0dGltZW91dHNlY29uZHMiOiAxMAogICAgfQogIH0sCiAgIm5vbmNlIjogIjB4MCIsCiAgInRpbWVzdGFtcCI6ICIweDU4ZWU0MGJhIiwKICAiZ2FzTGltaXQiOiAiMHgxZmZmZmZmZmZmZmZmZiIsCiAgImRpZmZpY3VsdHkiOiAiMHgxIiwKICAiZXh0cmFEYXRhIjogIjB4Zjg3ZWEwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMGY4NTQ5NDMxYmNmMDM2M2U4YjBiODU1YTY4NmFkOGRlZWYxODRlYTZkMDM1ZDM5NGY3N2RiZWYyYzk0NmM1OTA0MTdmODI3NzBkY2U3ZjU5ZjUxM2Q4NzI5NGY1ZDk1YTRhNTg1MGEzYTgxNGUwYjVlNjhlMjY4MDhlM2QxYjJiZTQ5NDRlZjkwOTVjMjIxNGI4NDhjOGI2MDQxMzYyMGQzOGRlMjNjOTRjOTg4MDg0MDAwMDAwMDBjMCIKfQ==
