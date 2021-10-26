@@ -136,7 +136,7 @@ contract ContainerContract is ProductContract {
                                     containerSupplyChain[_containerTrackingID].containerContents.push(_trackableTrackingID);
 
                                     //Gets added to containerHistory
-                                    containerHistory[_containerTrackingID].push(Transaction(containerSupplyChain[_containerTrackingID].custodian, now,
+                                    containerHistory[_containerTrackingID].push(Transaction(containerSupplyChain[_containerTrackingID].custodian, block.timestamp,
                                     containerSupplyChain[_containerTrackingID].lastScannedAt));
                                     return containerSupplyChain[_containerTrackingID].containerID;
                             }
