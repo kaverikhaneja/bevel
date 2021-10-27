@@ -4,6 +4,7 @@ const Web3Quorum = require('web3js-quorum');
 const fs = require('fs-extra'); // Importing for writing a file
 const contract = require('./compile'); //Importing the function to compile smart contract
 const minimist = require('minimist'); // Import the library for the arguments
+const Tx = require('ethereumjs-tx').Transaction
 
 let args = minimist(process.argv.slice(2));
 const url = args['url'];  // url of RPC port of besu node
@@ -20,23 +21,23 @@ const numberOfIterations = args['numberOfIteration'] | 100;
 
 args['v'] && console.log(`Creating a web3 provider.......`);
 const web3quorum = new Web3Quorum(new Web3(`${url}`));
+const web3 = new Web3(`${url}`)
 
 var transactionHash = ""; // to store transaction hash to get the transaction receipt 
 var contractAddress = "";
+
 
 const deploy = async () => {
   args['v'] && console.log(`Compiling the smartcontract.......`);
   const smartContract = await contract.GetByteCode(numberOfIterations, contractPath, contractEntryPoint, contractName); // Converting smart contract to byte code, optimizing the bytecode conversion for number of Iterations
   args['v'] && console.log(`Smartcontract converted into bytecode and abi`);
   
-  // const account = web3quorum.eth.accounts.privateKeyToAccount(privateKey);
-  // console.log(account);
-
   const contractOptions = {
     data: `0x${smartContract.bytecode}`, // contract binary
     privateFrom: `${orionPublicKey}`,    // tm address of the sender
     privateFor: privateFor,              // tm addresses of recipients
-    privateKey: `${privateKey}`
+    privateKey: `${privateKey}`,
+    gas: 410536
   };
 
   args['v'] && console.log(`Created the contract options`);
@@ -64,8 +65,10 @@ const deploy = async () => {
 };
 
 const deploySmartContract = async (contractOptions) => {
-  args['v'] && console.log(`Deploying the smartcontract......`);
-  return web3quorum.priv.generateAndSendRawTransaction(contractOptions); // deploy smartcontract with contractoptions
+  // args['v'] && console.log(`Deploying the smartcontract......`);
+  // return web3quorum.priv.generateAndSendRawTransaction(contractOptions); // deploy smartcontract with contractoptions
+  args['v'] && console.log(`Signing the transaction......`);
+  return web3.eth.accounts.signTransaction(contractOptions, privateKey).then(console.log);
 }
 
 const PostDeployKeeping = (abi, bytecode) => {
