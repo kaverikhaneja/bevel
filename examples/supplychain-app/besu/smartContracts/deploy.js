@@ -29,14 +29,14 @@ const deploy = async () => {
   const smartContract = await contract.GetByteCode(numberOfIterations, contractPath, contractEntryPoint, contractName); // Converting smart contract to byte code, optimizing the bytecode conversion for number of Iterations
   args['v'] && console.log(`Smartcontract converted into bytecode and abi`);
   
-  const account = web3quorum.eth.accounts.privateKeyToAccount(privateKey);
-  console.log(account);
+  // const account = web3quorum.eth.accounts.privateKeyToAccount(privateKey);
+  // console.log(account);
 
   const contractOptions = {
     data: `0x${smartContract.bytecode}`, // contract binary
     privateFrom: `${orionPublicKey}`,    // tm address of the sender
     privateFor: privateFor,              // tm addresses of recipients
-    privateKey: `${privateKey}`,
+    privateKey: `${privateKey}`
   };
 
   args['v'] && console.log(`Created the contract options`);
