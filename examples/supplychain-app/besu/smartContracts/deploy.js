@@ -37,27 +37,28 @@ const deploy = async () => {
     privateFrom: `${orionPublicKey}`,    // tm address of the sender
     privateFor: privateFor,              // tm addresses of recipients
     privateKey: `${privateKey}`,
-    gas: 410536
   };
 
   args['v'] && console.log(`Created the contract options`);
 
-  await deploySmartContract(contractOptions)
-    .then(hash => {
-      transactionHash = hash;
-      args['v'] && console.log(`Transaction hash for the deployment is ${hash}`);
-      web3quorum.priv.waitForTransactionReceipt(transactionHash)
-        .then(data => {
-          contractAddress = data.contractAddress
-          console.log(contractAddress);
-          args['v'] && console.log(`Transaction receipt:`); //comment for large smartcontracts
-          args['v'] && console.log(data); //comment for large smartcontracts
-        });
-    })
-    .catch(e => {
-      console.log("Error")
-      args['v'] && console.log(`Encountered error:  ${e}`);
-    }); 
+  await deploySmartContract(contractOptions);
+
+  // await deploySmartContract(contractOptions)
+  //   .then(hash => {
+  //     transactionHash = hash;
+  //     args['v'] && console.log(`Transaction hash for the deployment is ${hash}`);
+  //     web3quorum.priv.waitForTransactionReceipt(transactionHash)
+  //       .then(data => {
+  //         contractAddress = data.contractAddress
+  //         console.log(contractAddress);
+  //         args['v'] && console.log(`Transaction receipt:`); //comment for large smartcontracts
+  //         args['v'] && console.log(data); //comment for large smartcontracts
+  //       });
+  //   })
+  //   .catch(e => {
+  //     console.log("Error")
+  //     args['v'] && console.log(`Encountered error:  ${e}`);
+  //   }); 
 
   args['v'] && console.log(`writing the smartcontract binary and abi to build folder......`);
   PostDeployKeeping(smartContract.abi, smartContract.bytecode) // For writing the ABI and the smartContract bytecode in build 
@@ -65,10 +66,13 @@ const deploy = async () => {
 };
 
 const deploySmartContract = async (contractOptions) => {
-  // args['v'] && console.log(`Deploying the smartcontract......`);
-  // return web3quorum.priv.generateAndSendRawTransaction(contractOptions); // deploy smartcontract with contractoptions
-  args['v'] && console.log(`Signing the transaction......`);
-  return web3.eth.accounts.signTransaction(contractOptions, privateKey).then(console.log);
+  args['v'] && console.log(`Deploying the smartcontract......`);
+  const txHash = await web3quorum.priv.generateAndSendRawTransaction(contractOptions);
+  console.log("Getting contractAddress from txHash: ", txHash);
+  const privateTxReceipt = await web3quorum.priv.waitForTransactionReceipt(txHash);
+  console.log("Private Transaction Receipt: ", privateTxReceipt);
+  return privateTxReceipt // deploy smartcontract with contractoptions
+
 }
 
 const PostDeployKeeping = (abi, bytecode) => {
