@@ -108,7 +108,6 @@
 # Set the variables
 - set_fact:
     contract_address: "{{ address['stdout_lines'][3] | regex_replace('contractAddress: ') | regex_replace(',') | replace(\"'\",'') | trim }}" 
-    # contract_address: "{{ address['stdout_lines'][3] | regex_replace('contractAddress: ')}}"  
     contract_name: "{{ smart_contract.name }}"
     check: address['stdout_lines'][0]
   when: address['stdout_lines'][3] is defined and address['stdout_lines'][0] != "Error"
