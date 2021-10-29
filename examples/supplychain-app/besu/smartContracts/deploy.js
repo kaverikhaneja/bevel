@@ -4,7 +4,8 @@ const Web3Quorum = require('web3js-quorum');
 const fs = require('fs-extra'); // Importing for writing a file
 const contract = require('./compile'); //Importing the function to compile smart contract
 const minimist = require('minimist'); // Import the library for the arguments
-const Tx = require('ethereumjs-tx').Transaction
+const Tx = require('ethereumjs-tx').Transaction;
+const ethers = require("ethers");
 
 let args = minimist(process.argv.slice(2));
 const url = args['url'];  // url of RPC port of besu node
@@ -22,10 +23,10 @@ const numberOfIterations = args['numberOfIteration'] | 100;
 args['v'] && console.log(`Creating a web3 provider.......`);
 const web3quorum = new Web3Quorum(new Web3(`${url}`));
 const web3 = new Web3(`${url}`)
+const ethersProvider = new ethers.providers.JsonRpcProvider(`${url}`)
 
 var transactionHash = ""; // to store transaction hash to get the transaction receipt 
 var contractAddress = "";
-
 
 const deploy = async () => {
   args['v'] && console.log(`Compiling the smartcontract.......`);
@@ -37,41 +38,92 @@ const deploy = async () => {
     privateFrom: `${orionPublicKey}`,    // tm address of the sender
     privateFor: privateFor,              // tm addresses of recipients
     privateKey: `${privateKey}`,
+    restriction: `restricted`,
+    gas: 427372
   };
 
   args['v'] && console.log(`Created the contract options`);
-
-  await deploySmartContract(contractOptions);
-
-  // await deploySmartContract(contractOptions)
-  //   .then(hash => {
-  //     transactionHash = hash;
-  //     args['v'] && console.log(`Transaction hash for the deployment is ${hash}`);
-  //     web3quorum.priv.waitForTransactionReceipt(transactionHash)
-  //       .then(data => {
-  //         contractAddress = data.contractAddress
-  //         console.log(contractAddress);
-  //         args['v'] && console.log(`Transaction receipt:`); //comment for large smartcontracts
-  //         args['v'] && console.log(data); //comment for large smartcontracts
-  //       });
-  //   })
-  //   .catch(e => {
-  //     console.log("Error")
-  //     args['v'] && console.log(`Encountered error:  ${e}`);
-  //   }); 
+  
+  await deploySmartContract(contractOptions, smartContract.abi, smartContract.bytecode)
+    .then(hash => {
+      transactionHash = hash;
+      args['v'] && console.log(`Transaction hash for the deployment is ${hash}`);
+      web3quorum.priv.waitForTransactionReceipt(transactionHash)
+        .then(data => {
+          contractAddress = data.contractAddress
+          console.log(contractAddress);
+          args['v'] && console.log(`Transaction receipt:`); //comment for large smartcontracts
+          args['v'] && console.log(data); //comment for large smartcontracts
+        });
+    })
+    .catch(e => {
+      console.log("Error")
+      args['v'] && console.log(`Encountered error:  ${e}`);
+    }); 
 
   args['v'] && console.log(`writing the smartcontract binary and abi to build folder......`);
   PostDeployKeeping(smartContract.abi, smartContract.bytecode) // For writing the ABI and the smartContract bytecode in build 
 
 };
 
-const deploySmartContract = async (contractOptions) => {
+const deploySmartContract = async (contractOptions, abi, bytecode) => {
   args['v'] && console.log(`Deploying the smartcontract......`);
-  const txHash = await web3quorum.priv.generateAndSendRawTransaction(contractOptions);
-  console.log("Getting contractAddress from txHash: ", txHash);
-  const privateTxReceipt = await web3quorum.priv.waitForTransactionReceipt(txHash);
-  console.log("Private Transaction Receipt: ", privateTxReceipt);
-  return privateTxReceipt // deploy smartcontract with contractoptions
+
+  // instantiating smart contract
+  // const contract = new web3.eth.Contract(abi, contractAddress);
+  // console.log(contract);
+
+  // SIGNING USING Web3.ETH.ACCOUNTS
+  // args['v'] && console.log(`Signing the Transaction...`);
+  // web3.eth.accounts.signTransaction(contractOptions, privateKey)
+  // .then(data => {
+  //   rawTransaction = data.rawTransaction
+  //   // console.log(rawTransaction);
+  //   signature1 = data.v
+  //   console.log(signature1);
+  //   return web3.eth.sendSignedTransaction(rawTransaction);
+  // });
+  
+
+  // SIGNING AND SENDING Web3.ETH.SendSignedTransaction
+  // var privateKeyBuffer = Buffer.from(privateKey, `hex`)
+  // console.log(privateKeyBuffer);
+
+  // var rawTx = {
+  //   gasLimit: '0x1fffffffffffff',
+  //   data: `0x${bytecode}`, // contract binary
+  //   privateFrom: `${orionPublicKey}`,    // tm address of the sender
+  //   privateFor: privateFor,              // tm addresses of recipients
+  //   privateKey: `${privateKey}`,
+  //   restriction: `restricted`,
+  //   chainId: 2018
+  // }
+
+  // var tx = new Tx(rawTx);
+  // tx.sign(privateKeyBuffer);
+
+  // var serializedTx = tx.serialize();
+  // // console.log(serializedTx.toString('hex'));
+
+  // web3.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'))
+  // .on('receipt', console.log);
+
+
+
+  // // USING ETHERS LIBRARY
+  // args['v'] && console.log(`Signing the Transaction...`);
+  // web3.eth.accounts.signTransaction(contractOptions, privateKey)
+  // .then(data => {
+  //   rawTransaction = data.rawTransaction
+  //   let sentTx = ethersProvider.sendTransaction(rawTransaction);
+  //   console.log(sentTx);
+  // });
+
+
+
+
+  // SENDING USING WEB3QUORUM PRIV
+  return web3quorum.priv.generateAndSendRawTransaction(contractOptions);
 
 }
 

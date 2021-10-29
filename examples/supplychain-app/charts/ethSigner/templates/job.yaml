@@ -53,7 +53,7 @@ spec:
         - name: MOUNT_PATH
           value: "/password"
         - name: VAULT_ADDR
-          value: http://vault.internal.dev2.aws.blockchaincloudpoc-develop.com:20001
+          value: http://adf3753447cd347f4a78818d36eab86e-351981302.eu-west-1.elb.amazonaws.com:20002
         - name: KUBERNETES_AUTH_PATH
           value: besumanufacturerkav
         - name: VAULT_APP_ROLE

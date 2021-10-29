@@ -3,6 +3,8 @@ var {productABI} = require("./ABI/productABI");
 var {productContractAddress,quorumServer, ganacheServer, nodeIdentity, nodeOrganization, nodeOrganizationUnit, nodeSubject,protocol} = require("./config");
 
 // Smart contract address
+console.log(productContractAddress);
+
 const fromAddress = nodeIdentity;
 console.log(fromAddress);
 
