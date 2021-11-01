@@ -5,7 +5,7 @@ const fs = require('fs-extra'); // Importing for writing a file
 const contract = require('./compile'); //Importing the function to compile smart contract
 const minimist = require('minimist'); // Import the library for the arguments
 const Tx = require('ethereumjs-tx').Transaction;
-const ethers = require("ethers");
+// var ethers = require('ethers');
 
 let args = minimist(process.argv.slice(2));
 const url = args['url'];  // url of RPC port of besu node
@@ -22,11 +22,24 @@ const numberOfIterations = args['numberOfIteration'] | 100;
 
 args['v'] && console.log(`Creating a web3 provider.......`);
 const web3quorum = new Web3Quorum(new Web3(`${url}`));
-const web3 = new Web3(`${url}`)
-const ethersProvider = new ethers.providers.JsonRpcProvider(`${url}`)
+// const jsonRpcProvider = new ethers.providers.JsonRpcProvider(`${url}`);
+
 
 var transactionHash = ""; // to store transaction hash to get the transaction receipt 
 var contractAddress = "";
+
+// var signer = jsonRpcProvider.getSigner();
+// console.log(signer);
+
+// const wallet = new ethers.Wallet( privateKey, jsonRpcProvider)
+// var addr = wallet.address
+// console.log("account address: " + addr);
+// var chainid = signer.getChainId();
+// console.log("chain id: " + chainid)
+// var accountsList = jsonRpcProvider.listAccounts();
+// console.log("account list: " + accountsList);
+
+
 
 const deploy = async () => {
   args['v'] && console.log(`Compiling the smartcontract.......`);
@@ -39,7 +52,9 @@ const deploy = async () => {
     privateFor: privateFor,              // tm addresses of recipients
     privateKey: `${privateKey}`,
     restriction: `restricted`,
-    gas: 427372
+    gas: 427372,
+    gasLimit: '0x1fffffffffffff',
+    chainId: 2018
   };
 
   args['v'] && console.log(`Created the contract options`);
@@ -51,7 +66,6 @@ const deploy = async () => {
       web3quorum.priv.waitForTransactionReceipt(transactionHash)
         .then(data => {
           contractAddress = data.contractAddress
-          console.log(contractAddress);
           args['v'] && console.log(`Transaction receipt:`); //comment for large smartcontracts
           args['v'] && console.log(data); //comment for large smartcontracts
         });
@@ -81,12 +95,12 @@ const deploySmartContract = async (contractOptions, abi, bytecode) => {
   //   // console.log(rawTransaction);
   //   signature1 = data.v
   //   console.log(signature1);
-  //   return web3.eth.sendSignedTransaction(rawTransaction);
+  // return web3.eth.sendSignedTransaction(contractOptions);
   // });
   
 
   // SIGNING AND SENDING Web3.ETH.SendSignedTransaction
-  // var privateKeyBuffer = Buffer.from(privateKey, `hex`)
+  var privateKeyBuffer = Buffer.from(privateKey, `hex`)
   // console.log(privateKeyBuffer);
 
   // var rawTx = {
@@ -99,14 +113,14 @@ const deploySmartContract = async (contractOptions, abi, bytecode) => {
   //   chainId: 2018
   // }
 
-  // var tx = new Tx(rawTx);
-  // tx.sign(privateKeyBuffer);
+  var tx = new Tx(contractOptions);
+  tx.sign(privateKeyBuffer);
 
-  // var serializedTx = tx.serialize();
-  // // console.log(serializedTx.toString('hex'));
+  var serializedTx = tx.serialize();
+  console.log(serializedTx.toString('hex'));
 
-  // web3.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'))
-  // .on('receipt', console.log);
+  web3quorum.eth.sendRawTransaction('0x' + serializedTx.toString('hex'))
+  .on('receipt', console.log);
 
 
 
@@ -123,7 +137,7 @@ const deploySmartContract = async (contractOptions, abi, bytecode) => {
 
 
   // SENDING USING WEB3QUORUM PRIV
-  return web3quorum.priv.generateAndSendRawTransaction(contractOptions);
+  // return web3quorum.priv.generateAndSendRawTransaction(contractOptions);
 
 }
 
@@ -151,3 +165,4 @@ const PostDeployKeeping = (abi, bytecode) => {
 }
 
 deploy() // Calling the deploy function
+

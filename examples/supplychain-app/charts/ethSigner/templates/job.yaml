@@ -59,7 +59,7 @@ spec:
         - name: VAULT_APP_ROLE
           value: vault-role
         - name: VAULT_SECRET_PREFIX
-          value: secretsv2/manufacturerkav-bes/crypto/m-peer1/data
+          value: secretsv2/data/manufacturerkav-bes/crypto/m-peer1/data
         - name: KEYNAME
           value: password
         command: ["sh", "-c"]
@@ -100,7 +100,7 @@ spec:
 
           mkdir -p ${MOUNT_PATH}
 
-          vault_secret_key="${VAULT_SECRET_PREFIX}/${KEYNAME}" 
+          vault_secret_key="${VAULT_SECRET_PREFIX}" 
           echo "Getting password from $vault_secret_key" 
           LOOKUP_SECRET_RESPONSE=$(curl -sS \
             --header "X-Vault-Token:${VAULT_CLIENT_TOKEN}" \
