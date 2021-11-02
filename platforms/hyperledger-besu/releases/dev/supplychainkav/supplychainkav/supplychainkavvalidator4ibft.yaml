@@ -1,0 +1,80 @@
+apiVersion: helm.fluxcd.io/v1
+kind: HelmRelease
+metadata:
+  name: supplychainkavvalidator4ibft
+  namespace: supplychainkav-bes
+  annotations:
+    flux.weave.works/automated: "false"
+spec:
+  releaseName: supplychainkavvalidator4ibft
+  chart:
+    git: https://github.com/kaverikhaneja/blockchain-automation-framework.git
+    ref: feature-1562
+    path: platforms/hyperledger-besu/charts/node_validator 
+  values:
+    replicaCount: 1
+
+    healthcheck:
+      readinessthreshold: 100
+      readinesscheckinterval: 5
+
+    staticnodes:
+      - "enode://bf42f640589e39fc495989b5e3fff7adacf832c5766af3ea4d3649433995f69c482ae38deb20bedcd0134efa6acf182b0efedb9b9388209c4e41a27edd74b27d@validator1.bes.dev2.aws.blockchaincloudpoc-develop.com:15041"
+      
+      - "enode://286b53863dd7d9f8706a05072fa30a3cf60299241dfa7cf545d7caf268a9fdf6298d95a380707288edc6b5e296d811527fa784449739ceb67aac4c6c30c46af3@validator2.bes.dev2.aws.blockchaincloudpoc-develop.com:15043"
+      
+      - "enode://e569ec9ac9ebe30fe6b43e741a6ae5b3ed69e94ee3a660b29e052d15b55cefcef5ebd91c0cba20b9c2dc63bd9d9125dd3f0b634a0c4fcef6675748aa85223733@validator3.bes.dev2.aws.blockchaincloudpoc-develop.com:15045"
+      
+      - "enode://81d9e32f8fa1b6c87886cf283184da72fc93638510b23a3bd120b2fcf300b097f24fb3aee05e508c396dca915eb27d59cd6565077080600aea4f0502c83c969e@validator4.bes.dev2.aws.blockchaincloudpoc-develop.com:15047"
+      
+      - "enode://4e9ec52d228af35f6e59f4341c84b5ce23940b93a6f780752f4650ea7ffd3bb74c516cc9ed4c197b7ca63fca56fc3d0fa9240a70bfdd69e94b8997d1c26c3d0d@c-peer1.bes.dev2.aws.blockchaincloudpoc-develop.com:15049"
+      
+      - "enode://f6928f6ad5912fbee880742c554a20dbae9569a22bdb01761834f97cfba36302ebef551981494c1324b4e662aee9a3ac4ce5ba0bcf9fbc5de3eb7a86c7866dc2@m-peer1.bes.dev2.aws.blockchaincloudpoc-develop.com:15061"
+      
+
+    metadata:
+      namespace: supplychainkav-bes
+      labels:
+
+    ambassador:
+      external_url_suffix: bes.dev2.aws.blockchaincloudpoc-develop.com
+
+    liveliness_check:
+      enabled: false
+ 
+    proxy:
+      provider: ambassador
+      external_url: supplychainkav.bes.dev2.aws.blockchaincloudpoc-develop.com
+      p2p: 15047
+      rpc: 15048
+
+    images:
+      node: hyperledger/besu:21.1.1
+      alpineutils: hyperledgerlabs/alpine-utils:1.0
+
+    node:
+      name: validator4
+      tls: True
+      consensus: ibft
+      mountPath: /opt/besu/data
+      servicetype: ClusterIP
+      imagePullSecret: regcred
+      ports:
+        p2p: 30303
+        rpc: 8545
+        ws: 8546
+
+    storage:
+      storageclassname: awsstorageclass
+      storagesize: 1Gi
+
+    vault:
+      address: http://adf3753447cd347f4a78818d36eab86e-351981302.eu-west-1.elb.amazonaws.com:20002
+      secretprefix: secretsv2/data/supplychainkav-bes/crypto/validator4
+      serviceaccountname: vault-auth
+      keyname: data
+      tlsdir: tls
+      role: vault-role
+      authpath: besusupplychainkav
+
+    genesis: ewogICJjb25maWciOiB7CiAgICAiY2hhaW5JZCI6IDIwMTgsCiAgICAiY29uc3RhbnRpbm9wbGVmaXhibG9jayI6IDAsCiAgICAiY29udHJhY3RTaXplTGltaXQiOiAyMTQ3NDgzNjQ3LAogICAgImliZnQyIjogewogICAgICAiYmxvY2twZXJpb2RzZWNvbmRzIjogMiwKICAgICAgImVwb2NobGVuZ3RoIjogMzAwMDAsCiAgICAgICJyZXF1ZXN0dGltZW91dHNlY29uZHMiOiAxMAogICAgfQogIH0sCiAgIm5vbmNlIjogIjB4MCIsCiAgInRpbWVzdGFtcCI6ICIweDU4ZWU0MGJhIiwKICAiZ2FzTGltaXQiOiAiMHgxZmZmZmZmZmZmZmZmZiIsCiAgImRpZmZpY3VsdHkiOiAiMHgxIiwKICAiZXh0cmFEYXRhIjogIjB4Zjg3ZWEwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMGY4NTQ5NGIwZTEzM2JiNzQ5ZDg3ODU1YjhmZjgxOTQ0MjY4MDVkOGVjNjZhOGU5NDY5NmU4ODBiNDEyOTFjNmE3YjY1MmY0M2EwMzA3YmI2ZDQ4ZTczZmM5NDAxNWNhMzQ3OTU1MmI1YWIxMWMxY2E3NDEzNTIzM2I3ZjMzMzAzZDk5NGM1YmZmMzcyMWNmNTIxOTFiY2ViN2QwMzUwNzU2NDljZmRhMGMzMGE4MDg0MDAwMDAwMDBjMCIKfQ==
