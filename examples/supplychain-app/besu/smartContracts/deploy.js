@@ -47,6 +47,7 @@ const deploy = async () => {
   args['v'] && console.log(`Smartcontract converted into bytecode and abi`);
   
   const contractOptions = {
+    from: "0x54b354f4b18b6779df59eee011fa40787f09e53e",
     data: `0x${smartContract.bytecode}`, // contract binary
     privateFrom: `${orionPublicKey}`,    // tm address of the sender
     privateFor: privateFor,              // tm addresses of recipients
@@ -54,7 +55,8 @@ const deploy = async () => {
     restriction: `restricted`,
     gas: 427372,
     gasLimit: '0x1fffffffffffff',
-    chainId: 2018
+    chainId: 2018,
+    chain: "dev"
   };
 
   args['v'] && console.log(`Created the contract options`);
@@ -100,7 +102,7 @@ const deploySmartContract = async (contractOptions, abi, bytecode) => {
   
 
   // SIGNING AND SENDING Web3.ETH.SendSignedTransaction
-  var privateKeyBuffer = Buffer.from(privateKey, `hex`)
+  // var privateKeyBuffer = Buffer.from(privateKey, `hex`)
   // console.log(privateKeyBuffer);
 
   // var rawTx = {
@@ -113,14 +115,14 @@ const deploySmartContract = async (contractOptions, abi, bytecode) => {
   //   chainId: 2018
   // }
 
-  var tx = new Tx(contractOptions);
-  tx.sign(privateKeyBuffer);
+  // var tx = new Tx(contractOptions);
+  // tx.sign(privateKeyBuffer);
 
-  var serializedTx = tx.serialize();
-  console.log(serializedTx.toString('hex'));
+  // var serializedTx = tx.serialize();
+  // console.log(serializedTx.toString('hex'));
 
-  web3quorum.eth.sendRawTransaction('0x' + serializedTx.toString('hex'))
-  .on('receipt', console.log);
+  // web3quorum.eth.sendRawTransaction('0x' + serializedTx.toString('hex'))
+  // .on('receipt', console.log);
 
 
 
@@ -133,11 +135,12 @@ const deploySmartContract = async (contractOptions, abi, bytecode) => {
   //   console.log(sentTx);
   // });
 
-
-
-
   // SENDING USING WEB3QUORUM PRIV
-  // return web3quorum.priv.generateAndSendRawTransaction(contractOptions);
+  return web3quorum.priv.generateAndSendRawTransaction(contractOptions);
+
+  // SIGN & SEND USING ETHSIGNER
+  // return web3quorum.eth.sendTransaction(contractOptions);
+
 
 }
 
