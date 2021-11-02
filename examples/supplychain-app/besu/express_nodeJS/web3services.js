@@ -3,7 +3,8 @@ var {productABI} = require("./ABI/productABI");
 var {productContractAddress,quorumServer, ganacheServer, nodeIdentity, nodeOrganization, nodeOrganizationUnit, nodeSubject,protocol} = require("./config");
 
 // Smart contract address
-console.log(productContractAddress);
+const productAddress = productContractAddress;
+console.log(productAddress);
 
 const fromAddress = nodeIdentity;
 console.log(fromAddress);
@@ -24,6 +25,7 @@ const web3 = new Web3(new Web3.providers.HttpProvider(ganacheServer));
 
 //instantiate the product smartcontract 
 let productContract = new web3.eth.Contract(productABI, productContractAddress);
+console.log("test");
 console.log(productContract);
 
 module.exports = {

@@ -83,7 +83,7 @@ const deploySmartContract = async (contractOptions, abi, bytecode) => {
   args['v'] && console.log(`Deploying the smartcontract......`);
 
   // instantiating smart contract
-  // const contract = new web3.eth.Contract(abi, contractAddress);
+  // const contract = new web3quorum.eth.Contract(abi, contractAddress);
   // console.log(contract);
 
   // SIGNING USING Web3.ETH.ACCOUNTS
