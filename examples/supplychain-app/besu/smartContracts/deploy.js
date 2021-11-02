@@ -24,7 +24,6 @@ args['v'] && console.log(`Creating a web3 provider.......`);
 const web3quorum = new Web3Quorum(new Web3(`${url}`));
 // const jsonRpcProvider = new ethers.providers.JsonRpcProvider(`${url}`);
 
-
 var transactionHash = ""; // to store transaction hash to get the transaction receipt 
 var contractAddress = "";
 
@@ -39,24 +38,22 @@ var contractAddress = "";
 // var accountsList = jsonRpcProvider.listAccounts();
 // console.log("account list: " + accountsList);
 
-
-
 const deploy = async () => {
   args['v'] && console.log(`Compiling the smartcontract.......`);
   const smartContract = await contract.GetByteCode(numberOfIterations, contractPath, contractEntryPoint, contractName); // Converting smart contract to byte code, optimizing the bytecode conversion for number of Iterations
   args['v'] && console.log(`Smartcontract converted into bytecode and abi`);
   
   const contractOptions = {
-    from: "0x54b354f4b18b6779df59eee011fa40787f09e53e",
+    // from: "0x54b354f4b18b6779df59eee011fa40787f09e53e",
     data: `0x${smartContract.bytecode}`, // contract binary
     privateFrom: `${orionPublicKey}`,    // tm address of the sender
     privateFor: privateFor,              // tm addresses of recipients
     privateKey: `${privateKey}`,
-    restriction: `restricted`,
-    gas: 427372,
-    gasLimit: '0x1fffffffffffff',
-    chainId: 2018,
-    chain: "dev"
+    // restriction: `restricted`,
+    // gas: 427372,
+    // gasLimit: '0x1fffffffffffff',
+    // chainId: 2018,
+    // chain: "dev"
   };
 
   args['v'] && console.log(`Created the contract options`);

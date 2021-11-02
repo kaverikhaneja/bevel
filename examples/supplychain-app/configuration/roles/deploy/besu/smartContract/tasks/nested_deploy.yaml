@@ -84,7 +84,7 @@
 - name: Run deploy.js for "{{ organization_data.name | lower }}"
   shell: |
     cd "{{ playbook_dir }}/../../../{{ smart_contract.deployjs_path }}"
-    node deploy.js --url "{{ URL }}" --path "{{ contract_path }}" --entryPoint "{{ entrypoint }}" --contractName "{{ contract }}" --chainId 2018 --orionKey "{{ orion_key.stdout }}" --privateKey "{{ nodekey.stdout | regex_replace('0x', '') }}" --privateFor '{{ privateFor }}' --numberOfIteration "{{ numberOfIteration }}"
+    node deploy.js -v --url "{{ URL }}" --path "{{ contract_path }}" --entryPoint "{{ entrypoint }}" --contractName "{{ contract }}" --chainId 2018 --orionKey "{{ orion_key.stdout }}" --privateKey "{{ nodekey.stdout | regex_replace('0x', '') }}" --privateFor '{{ privateFor }}' --numberOfIteration "{{ numberOfIteration }}"
   vars:
     URL: "{{ peer.geth_url }}"
     contract_path: "{{ smart_contract.contract_path }}"
@@ -95,22 +95,21 @@
   register: address
   retries: "{{ network.env.retry_count}}"
   delay: 5
-  until: address['stdout_lines'][1] is defined and address['stdout_lines'][0] != "Error"
+  until: address['stdout_lines'][12] is defined and address['stdout_lines'][0] != "Error"
 
 - name: Getting contract address 
   debug:
     msg: 
-      # - "{{ address }}"
-      # - "{{ address['cmd'] }}"
+      - "{{ address }}"
+      - "{{ address['cmd'] }}"
       - "{{ address['stdout_lines'] }}"
-
 
 # Set the variables
 - set_fact:
-    contract_address: "{{ address['stdout_lines'][1] | regex_replace('contractAddress: ') | regex_replace(',') | replace(\"'\",'') | trim }}" 
+    contract_address: "{{ address['stdout_lines'][12] | regex_replace('contractAddress: ') | regex_replace(',') | replace(\"'\",'') | trim }}" 
     contract_name: "{{ smart_contract.name }}"
     check: address['stdout_lines'][0]
-  when: address['stdout_lines'][1] is defined and address['stdout_lines'][0] != "Error"
+  when: address['stdout_lines'][12] is defined and address['stdout_lines'][0] != "Error"
 
 - name:  Checking contract_address
   debug: 
