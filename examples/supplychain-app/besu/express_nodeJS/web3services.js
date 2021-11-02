@@ -24,6 +24,7 @@ const web3 = new Web3(new Web3.providers.HttpProvider(ganacheServer));
 
 //instantiate the product smartcontract 
 let productContract = new web3.eth.Contract(productABI, productContractAddress);
+console.log(productContract);
 
 module.exports = {
     productContract,
