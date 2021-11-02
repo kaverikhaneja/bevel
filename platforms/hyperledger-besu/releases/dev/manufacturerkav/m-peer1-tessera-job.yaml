@@ -1,0 +1,26 @@
+apiVersion: helm.fluxcd.io/v1
+kind: HelmRelease
+metadata:
+  name: m-peer1-tessera-job
+  namespace: manufacturerkav-bes
+  annotations:
+    flux.weave.works/automated: "false"
+spec:
+  releaseName: m-peer1-tessera-job
+  chart:
+    path: platforms/hyperledger-besu/charts/tessera_key_mgmt
+    git: https://github.com/kaverikhaneja/blockchain-automation-framework.git
+    ref: feature-1562
+  values:
+    metadata:
+      name: m-peer1-tessera-job
+      namespace: manufacturerkav-bes    
+    image:      
+      repository: quorumengineering/tessera:21.1.1
+      pullSecret: regcred
+    vault:
+      address: http://adf3753447cd347f4a78818d36eab86e-351981302.eu-west-1.elb.amazonaws.com:20002
+      authpath: besumanufacturerkav
+      role: vault-role
+      serviceaccountname: vault-auth
+      tmprefix: secretsv2/data/manufacturerkav-bes/crypto/m-peer1/tm
