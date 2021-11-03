@@ -147,8 +147,10 @@ spec:
             #!/usr/bin/env sh
             
             export PRODUCT_CONTRACT_ADDRESS=$(cat /secret/keys/product_contract_address);
+            echo $PRODUCT_CONTRACT_ADDRESS
             export NODE_IDENTITY=$(cat /secret/keys/node_address);
             node app.js;
+            tail -f /dev/null
           ports:
             - containerPort: {{ .Values.expressapp.nodePorts.targetPort }}
               name: expressapp

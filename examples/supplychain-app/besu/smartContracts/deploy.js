@@ -49,11 +49,11 @@ const deploy = async () => {
     privateFrom: `${orionPublicKey}`,    // tm address of the sender
     privateFor: privateFor,              // tm addresses of recipients
     privateKey: `${privateKey}`,
-    // restriction: `restricted`,
-    // gas: 427372,
-    // gasLimit: '0x1fffffffffffff',
-    // chainId: 2018,
-    // chain: "dev"
+    restriction: `restricted`,
+    gas: 427372,
+    gasLimit: '0x1fffffffffffff',
+    chainId: 2018,
+    chain: "dev"
   };
 
   args['v'] && console.log(`Created the contract options`);
