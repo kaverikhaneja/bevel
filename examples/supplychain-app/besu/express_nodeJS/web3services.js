@@ -28,8 +28,8 @@ const web3quorum = new Web3Quorum(new Web3(ganacheServer));
 
 //instantiate the product smartcontract 
 let productContract = new web3quorum.eth.Contract(productABI, productContractAddress);
-console.log("test");
-console.log(productContract);
+// console.log("test");
+// console.log(productContract);
 
 module.exports = {
     productContract,
