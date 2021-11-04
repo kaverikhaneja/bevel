@@ -121,21 +121,21 @@ spec:
 
               echo "node address: ${node_address}"
 
-              echo "Getting the private key of node from vault: ${NODE_ADDRESS_SECRET}"          
-              LOOKUP_SECRET_RESPONSE=$(curl -sS \
-                --header "X-Vault-Token:${VAULT_CLIENT_TOKEN}" \
-                ${VAULT_ADDR}/v1/${NODE_ADDRESS_SECRET} | \
-                jq -r 'if .errors then . else . end')
-              validateVaultResponse "secret (${NODE_ADDRESS_SECRET})" "${LOOKUP_SECRET_RESPONSE}" "LOOKUPSECRETRESPONSE"
-              private_key=$(echo ${LOOKUP_SECRET_RESPONSE} | jq -r '.data.data["key"]')
+              # echo "Getting the private key of node from vault: ${NODE_ADDRESS_SECRET}"          
+              # LOOKUP_SECRET_RESPONSE=$(curl -sS \
+              #   --header "X-Vault-Token:${VAULT_CLIENT_TOKEN}" \
+              #   ${VAULT_ADDR}/v1/${NODE_ADDRESS_SECRET} | \
+              #   jq -r 'if .errors then . else . end')
+              # validateVaultResponse "secret (${NODE_ADDRESS_SECRET})" "${LOOKUP_SECRET_RESPONSE}" "LOOKUPSECRETRESPONSE"
+              # private_key=$(echo ${LOOKUP_SECRET_RESPONSE} | jq -r '.data.data["key"]')
 
-              echo "Getting the tm key of node from vault: ${NODE_ADDRESS_SECRET}"          
-              LOOKUP_SECRET_RESPONSE=$(curl -sS \
-                --header "X-Vault-Token:${VAULT_CLIENT_TOKEN}" \
-                ${VAULT_ADDR}/v1/${NODE_ADDRESS_SECRET} | \
-                jq -r 'if .errors then . else . end')
-              validateVaultResponse "secret (${NODE_ADDRESS_SECRET})" "${LOOKUP_SECRET_RESPONSE}" "LOOKUPSECRETRESPONSE"
-              tm_key=$(echo ${LOOKUP_SECRET_RESPONSE} | jq -r '.data.data["tm_key"]')
+              # echo "Getting the tm key of node from vault: ${NODE_ADDRESS_SECRET}"          
+              # LOOKUP_SECRET_RESPONSE=$(curl -sS \
+              #   --header "X-Vault-Token:${VAULT_CLIENT_TOKEN}" \
+              #   ${VAULT_ADDR}/v1/${NODE_ADDRESS_SECRET} | \
+              #   jq -r 'if .errors then . else . end')
+              # validateVaultResponse "secret (${NODE_ADDRESS_SECRET})" "${LOOKUP_SECRET_RESPONSE}" "LOOKUPSECRETRESPONSE"
+              # tm_key=$(echo ${LOOKUP_SECRET_RESPONSE} | jq -r '.data.data["tm_key"]')
   
               OUTPUT_PATH="${MOUNT_PATH}/keys"
               mkdir -p ${OUTPUT_PATH}

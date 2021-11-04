@@ -10,8 +10,8 @@ module.exports = {
   nodeOrganizationUnit : process.env.NODE_ORGANIZATION_UNIT,
   nodeSubject : process.env.NODE_SUBJECT,
   protocol: process.env.PROTOCOL,
-  privateKey: TRYFHUT877549,
-  privateFrom: FHUEYT84952FW98FW8R,
-  privateFor: HFIWUERFY938758RU398RU8UJ8E
+  privateKey: "2ee0a552f98d59913b9984c25728b529ba705da484bef295ff441c96332e4d15",
+  privateFrom: "DS441gvZ2Ek0oTt/qw4zioZsFxZc/hJe/C4VMWQM7Ek=",
+  privateFor: "uBjoCEQyezvTqMe8nKiTPwvinJWFsLWBbYFNxA2QrQ8="
 
 };

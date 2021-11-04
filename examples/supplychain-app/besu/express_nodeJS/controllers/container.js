@@ -172,10 +172,10 @@ router.post("/", upload.array(), function(req, res) {
   console.log(`Transaction hash: ${transactionHash}`);
   const result = await web3quorum.priv.waitForTransactionReceipt(transactionHash);
   return result;
-};
+  }
+  //calling the addContainer function
+  addContainer(ganacheServer, productContractAddress, productABI, privateKey, privateFrom, privateFor);
 
-addContainer(ganacheServer, productContractAddress, productABI, privateKey, privateFrom, privateFor);
-  
 });
 
 //PUT for updating custodian
