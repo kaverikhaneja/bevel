@@ -111,6 +111,7 @@ router.use(bodyParser.json()); // for parsing application/json
 //POST for new container
 router.post("/", upload.array(), function(req, res) {
   // TODO: Implement new container functionality
+  console.log(req);
   let newContainer = {
     misc: req.body.misc,
     trackingID: req.body.trackingID,
@@ -120,7 +121,6 @@ router.post("/", upload.array(), function(req, res) {
   // Add this.address in the counterparties list
   newContainer.counterparties.push(fromAddress+","+fromNodeSubject);
 
-  
   var misc = [];
   var keys = Object.keys(newContainer.misc);
 
@@ -128,6 +128,9 @@ router.post("/", upload.array(), function(req, res) {
     var x = "{ \""+keys[i] + '\": ' + JSON.stringify(newContainer.misc[keys[i]]) + "}";
     misc.push(x)
   }
+
+  var result = await addContainer(ganacheServer, productContractAddress, newContainer, productABI, privateKey, privateFrom, privateFor);
+  console.log(result);
 
   // productContract.methods
   //   .addContainer(
@@ -149,7 +152,9 @@ router.post("/", upload.array(), function(req, res) {
   //     console.log(error);
   //   });
 
-  async function addContainer(ganacheServer, productContractAddress, productABI, privateKey, privateFrom, privateFor) {
+});
+
+async function addContainer(ganacheServer, productContractAddress, value, productABI, privateKey, privateFrom, privateFor) {
   const Web3 = require("web3");
   const Web3Quorum = require("web3js-quorum");
   const web3quorum = new Web3Quorum(new Web3(ganacheServer));
@@ -158,6 +163,7 @@ router.post("/", upload.array(), function(req, res) {
   const functionAbi = contract._jsonInterface.find(e => {
     return e.name === "addContainer";
   });
+  console.log(functionAbi);
   const functionArgs = web3quorum.eth.abi                   //encode and decode parameters to ABI for function calls to the EVM
     .encodeParameters(functionAbi.inputs, [value])
     .slice(2);
@@ -168,15 +174,11 @@ router.post("/", upload.array(), function(req, res) {
     privateFrom: privateFrom,
     privateFor: privateFor
   };
-  const transactionHash = await web3quorum.priv.generateAndSendRawTransaction(functionParams);
+  const transactionHash = web3quorum.priv.generateAndSendRawTransaction(functionParams);
   console.log(`Transaction hash: ${transactionHash}`);
-  const result = await web3quorum.priv.waitForTransactionReceipt(transactionHash);
+  const result = web3quorum.priv.waitForTransactionReceipt(transactionHash);  
   return result;
   }
-  //calling the addContainer function
-  addContainer(ganacheServer, productContractAddress, productABI, privateKey, privateFrom, privateFor);
-
-});
 
 //PUT for updating custodian
 // router.put("/:trackingID/custodian", function(req, res) {

@@ -76,10 +76,17 @@ const deploy = async () => {
 
   args['v'] && console.log(`writing the smartcontract binary and abi to build folder......`);
   PostDeployKeeping(smartContract.abi, smartContract.bytecode) // For writing the ABI and the smartContract bytecode in build 
+  
+  let newContainer = {
+    name: "health"
+  };
+  //calling the addContainer function
+  var result = await addContainer(url, contractAddress, newContainer, smartContract.abi, privateKey, privateFor, privateFor);
+  console.log(result);
 
 };
 
-const deploySmartContract = async (contractOptions, abi, bytecode) => {
+const deploySmartContract = async (contractOptions) => {
   args['v'] && console.log(`Deploying the smartcontract......`);
 
   // instantiating smart contract
@@ -87,6 +94,32 @@ const deploySmartContract = async (contractOptions, abi, bytecode) => {
   // console.log(contract);
 
   return web3quorum.priv.generateAndSendRawTransaction(contractOptions);
+}
+
+
+const addContainer = async (url, contractAddress, value, abi, privateKey, privateFrom, privateFor)  => {
+  // const Web3 = require("web3");
+  // const Web3Quorum = require("web3js-quorum");
+  // const web3quorum = new Web3Quorum(new Web3(url));
+  const contract = new web3quorum.eth.Contract(abi, contractAddress);
+  // eslint-disable-next-line no-underscore-dangle
+  const functionAbi = contract._jsonInterface.find(e => {
+    return e.name === "addContainer";
+  });
+  const functionArgs = web3quorum.eth.abi                   //encode and decode parameters to ABI for function calls to the EVM
+    .encodeParameters(functionAbi.inputs, [value])
+    .slice(2);
+  const functionParams = {
+    to: productContractAddress,
+    data: functionAbi.signature + functionArgs,
+    privateKey: privateKey,
+    privateFrom: privateFrom,
+    privateFor: privateFor
+  };
+  const transactionHash = await web3quorum.priv.generateAndSendRawTransaction(functionParams);
+  console.log(`Transaction hash: ${transactionHash}`);
+  const result = await web3quorum.priv.waitForTransactionReceipt(transactionHash);
+  return result;
 }
 
 const PostDeployKeeping = (abi, bytecode) => {
