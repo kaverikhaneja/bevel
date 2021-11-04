@@ -158,7 +158,7 @@ router.post("/", upload.array(), function(req, res) {
   const functionAbi = contract._jsonInterface.find(e => {
     return e.name === "addContainer";
   });
-  const functionArgs = web3quorum.eth.abi
+  const functionArgs = web3quorum.eth.abi                   //encode and decode parameters to ABI for function calls to the EVM
     .encodeParameters(functionAbi.inputs, [value])
     .slice(2);
   const functionParams = {
