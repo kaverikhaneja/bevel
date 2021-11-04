@@ -1,14 +1,12 @@
 var express = require('express')
   , router = express.Router();
 
-const {productContract, fromAddress, fromNodeSubject,protocol} = require('../web3services');
+const {productContract, fromAddress, fromNodeSubject } = require('../web3services');
 var multer = require('multer'); // v1.0.5
 var upload = multer(); // for parsing multipart/form-data
 var bodyParser = require('body-parser');
-const { productContractAddress, ganacheServer } = require('../config');
+const { productContractAddress, ganacheServer, privateKey, privateFor, privateFrom } = require('../config');
 const { productABI } = require('../ABI/productABI');
-const Web3 = require('web3'); // Importing web3.js library
-const Web3Quorum = require('web3js-quorum');
 
 router.use(bodyParser.json()); // for parsing application/json
 
@@ -131,25 +129,52 @@ router.post("/", upload.array(), function(req, res) {
     misc.push(x)
   }
 
-  productContract.methods
-    .addContainer(
-      "health",
-      misc,
-      newContainer.trackingID,
-      newContainer.lastScannedAt,
-      newContainer.counterparties,
-    )
-    .send({ from: fromAddress, gas: 6721900, gasPrice: "0" })
-    .on("receipt", function(receipt) {
+  // productContract.methods
+  //   .addContainer(
+  //     "health",
+  //     misc,
+  //     newContainer.trackingID,
+  //     newContainer.lastScannedAt,
+  //     newContainer.counterparties,
+  //   )
+  //   .send({ from: fromAddress, gas: 6721900, gasPrice: "0" })
+  //   .on("receipt", function(receipt) {
 
-      if (receipt.status === true) {
-        res.send({generatedID: newContainer.trackingID});
-      }
-    })
-    .catch(error => {
-      res.send(error.message);
-      console.log(error);
-    });
+  //     if (receipt.status === true) {
+  //       res.send({generatedID: newContainer.trackingID});
+  //     }
+  //   })
+  //   .catch(error => {
+  //     res.send(error.message);
+  //     console.log(error);
+  //   });
+
+  async function addContainer(ganacheServer, productContractAddress, productABI, privateKey, privateFrom, privateFor) {
+  const Web3 = require("web3");
+  const Web3Quorum = require("web3js-quorum");
+  const web3quorum = new Web3Quorum(new Web3(ganacheServer));
+  const contract = new web3quorum.eth.Contract(productABI, productContractAddress);
+  // eslint-disable-next-line no-underscore-dangle
+  const functionAbi = contract._jsonInterface.find(e => {
+    return e.name === "addContainer";
+  });
+  const functionArgs = web3quorum.eth.abi
+    .encodeParameters(functionAbi.inputs, [value])
+    .slice(2);
+  const functionParams = {
+    to: productContractAddress,
+    data: functionAbi.signature + functionArgs,
+    privateKey: privateKey,
+    privateFrom: privateFrom,
+    privateFor: privateFor
+  };
+  const transactionHash = await web3quorum.priv.generateAndSendRawTransaction(functionParams);
+  console.log(`Transaction hash: ${transactionHash}`);
+  const result = await web3quorum.priv.waitForTransactionReceipt(transactionHash);
+  return result;
+};
+
+addContainer(ganacheServer, productContractAddress, productABI, privateKey, privateFrom, privateFor);
   
 });
 

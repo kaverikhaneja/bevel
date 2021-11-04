@@ -86,59 +86,7 @@ const deploySmartContract = async (contractOptions, abi, bytecode) => {
   // const contract = new web3quorum.eth.Contract(abi, contractAddress);
   // console.log(contract);
 
-  // SIGNING USING Web3.ETH.ACCOUNTS
-  // args['v'] && console.log(`Signing the Transaction...`);
-  // web3.eth.accounts.signTransaction(contractOptions, privateKey)
-  // .then(data => {
-  //   rawTransaction = data.rawTransaction
-  //   // console.log(rawTransaction);
-  //   signature1 = data.v
-  //   console.log(signature1);
-  // return web3.eth.sendSignedTransaction(contractOptions);
-  // });
-  
-
-  // SIGNING AND SENDING Web3.ETH.SendSignedTransaction
-  // var privateKeyBuffer = Buffer.from(privateKey, `hex`)
-  // console.log(privateKeyBuffer);
-
-  // var rawTx = {
-  //   gasLimit: '0x1fffffffffffff',
-  //   data: `0x${bytecode}`, // contract binary
-  //   privateFrom: `${orionPublicKey}`,    // tm address of the sender
-  //   privateFor: privateFor,              // tm addresses of recipients
-  //   privateKey: `${privateKey}`,
-  //   restriction: `restricted`,
-  //   chainId: 2018
-  // }
-
-  // var tx = new Tx(contractOptions);
-  // tx.sign(privateKeyBuffer);
-
-  // var serializedTx = tx.serialize();
-  // console.log(serializedTx.toString('hex'));
-
-  // web3quorum.eth.sendRawTransaction('0x' + serializedTx.toString('hex'))
-  // .on('receipt', console.log);
-
-
-
-  // // USING ETHERS LIBRARY
-  // args['v'] && console.log(`Signing the Transaction...`);
-  // web3.eth.accounts.signTransaction(contractOptions, privateKey)
-  // .then(data => {
-  //   rawTransaction = data.rawTransaction
-  //   let sentTx = ethersProvider.sendTransaction(rawTransaction);
-  //   console.log(sentTx);
-  // });
-
-  // SENDING USING WEB3QUORUM PRIV
   return web3quorum.priv.generateAndSendRawTransaction(contractOptions);
-
-  // SIGN & SEND USING ETHSIGNER
-  // return web3quorum.eth.sendTransaction(contractOptions);
-
-
 }
 
 const PostDeployKeeping = (abi, bytecode) => {
