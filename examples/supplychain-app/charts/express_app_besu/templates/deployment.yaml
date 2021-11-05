@@ -120,22 +120,6 @@ spec:
               node_address=$(echo ${LOOKUP_SECRET_RESPONSE} | jq -r '.data.data["nodeAddress"]')
 
               echo "node address: ${node_address}"
-
-              # echo "Getting the private key of node from vault: ${NODE_ADDRESS_SECRET}"          
-              # LOOKUP_SECRET_RESPONSE=$(curl -sS \
-              #   --header "X-Vault-Token:${VAULT_CLIENT_TOKEN}" \
-              #   ${VAULT_ADDR}/v1/${NODE_ADDRESS_SECRET} | \
-              #   jq -r 'if .errors then . else . end')
-              # validateVaultResponse "secret (${NODE_ADDRESS_SECRET})" "${LOOKUP_SECRET_RESPONSE}" "LOOKUPSECRETRESPONSE"
-              # private_key=$(echo ${LOOKUP_SECRET_RESPONSE} | jq -r '.data.data["key"]')
-
-              # echo "Getting the tm key of node from vault: ${NODE_ADDRESS_SECRET}"          
-              # LOOKUP_SECRET_RESPONSE=$(curl -sS \
-              #   --header "X-Vault-Token:${VAULT_CLIENT_TOKEN}" \
-              #   ${VAULT_ADDR}/v1/${NODE_ADDRESS_SECRET} | \
-              #   jq -r 'if .errors then . else . end')
-              # validateVaultResponse "secret (${NODE_ADDRESS_SECRET})" "${LOOKUP_SECRET_RESPONSE}" "LOOKUPSECRETRESPONSE"
-              # tm_key=$(echo ${LOOKUP_SECRET_RESPONSE} | jq -r '.data.data["tm_key"]')
   
               OUTPUT_PATH="${MOUNT_PATH}/keys"
               mkdir -p ${OUTPUT_PATH}
@@ -166,15 +150,6 @@ spec:
             echo $PRODUCT_CONTRACT_ADDRESS
 
             export NODE_IDENTITY=$(cat /secret/keys/node_address);
-
-            # export PRIVATE_KEY=
-            # echo $PRIVATE_KEY
-
-            # export PRIVATE_FROM=
-            # echo $PRIVATE_FROM
-
-            # # export PRIVATE_FOR=
-            # # echo $PRIVATE_FOR
 
             node app.js;
           ports:
