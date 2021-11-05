@@ -61,15 +61,29 @@ const deploy = async () => {
       args['v'] && console.log(`Encountered error:  ${e}`);
     }); 
 
-  args['v'] && console.log(`writing the smartcontract binary and abi to build folder......`);
-  PostDeployKeeping(smartContract.abi, smartContract.bytecode) // For writing the ABI and the smartContract bytecode in build 
+  // args['v'] && console.log(`writing the smartcontract binary and abi to build folder......`);
+  // PostDeployKeeping(smartContract.abi, smartContract.bytecode) // For writing the ABI and the smartContract bytecode in build 
   
+  // console.log("create new container")
   // let newContainer = {
-  //   name: "health"
+  //   // health: body.health,
+  //   // trackingID: body.trackingID
+  //       lastScannedAt: "O=Manufacturer,OU=Manufacturer,L=47.38/8.54/Zurich,C=CH"
   // };
-  // //calling the addContainer function
-  // var result = await addContainer(url, contractAddress, newContainer, smartContract.abi, privateKey, privateFor, privateFor);
+
+  // var misc = [];
+  // var keys = Object.keys(newContainer.misc);
+
+  // for(var i = 0; i < keys.length; i++){
+  //   var x = "{ \""+keys[i] + '\": ' + JSON.stringify(newContainer.misc[keys[i]]) + "}";
+  //   misc.push(x)
+  // }
+  
+  // var result = await addContainer(url, contractAddress, newContainer, smartContract.abi, privateKey, privateFrom, privateFor);
   // console.log(result);
+
+  addContainer(contractAddress, smartContract.abi, privateKey, orionPublicKey, privateFor)
+  
 
 };
 
@@ -85,29 +99,38 @@ const deploySmartContract = async (contractOptions) => {
 
 
 // const addContainer = async (url, contractAddress, value, abi, privateKey, privateFrom, privateFor)  => {
-//   // const Web3 = require("web3");
-//   // const Web3Quorum = require("web3js-quorum");
-//   // const web3quorum = new Web3Quorum(new Web3(url));
-//   const contract = new web3quorum.eth.Contract(abi, contractAddress);
-//   // eslint-disable-next-line no-underscore-dangle
-//   const functionAbi = contract._jsonInterface.find(e => {
-//     return e.name === "addContainer";
-//   });
-//   const functionArgs = web3quorum.eth.abi                   //encode and decode parameters to ABI for function calls to the EVM
-//     .encodeParameters(functionAbi.inputs, [value])
-//     .slice(2);
-//   const functionParams = {
-//     to: productContractAddress,
-//     data: functionAbi.signature + functionArgs,
-//     privateKey: privateKey,
-//     privateFrom: privateFrom,
-//     privateFor: privateFor
-//   };
-//   const transactionHash = await web3quorum.priv.generateAndSendRawTransaction(functionParams);
-//   console.log(`Transaction hash: ${transactionHash}`);
-//   const result = await web3quorum.priv.waitForTransactionReceipt(transactionHash);
-//   return result;
-// }
+const addContainer = async (contractAddress, abi, privateKey, orionPublicKey, privateFor)  => {
+  // const Web3 = require("web3");
+  // const Web3Quorum = require("web3js-quorum");
+  // const web3quorum = new Web3Quorum(new Web3(url));
+  const contract = new web3quorum.eth.Contract(abi, contractAddress);
+  // eslint-disable-next-line no-underscore-dangle
+  const functionAbi = contract._jsonInterface.find(e => {
+    return e.name === "addContainer";
+  });
+  console.log("Function ABI: " + functionAbi);
+
+  // const functionArgs = web3quorum.eth.abi                   //encode and decode parameters to ABI for function calls to the EVM
+  //   .encodeParameters(functionAbi.inputs, [value])
+  //   .slice(2);
+  // console.log("Function args: " + functionArgs);
+
+  const functionParams = {
+    to: contractAddress,
+    // data: functionAbi.signature + functionArgs,
+    data: functionAbi.signature,
+    privateKey:`${privateKey}`,
+    privateFrom: `${orionPublicKey}`,
+    privateFor: privateFor
+  };
+  console.log("Function parameters: " + functionParams);
+
+  // const transactionHash = await web3quorum.priv.generateAndSendRawTransaction(functionParams);
+  // console.log(`Transaction hash: ${transactionHash}`);
+
+  // const result = await web3quorum.priv.waitForTransactionReceipt(transactionHash);
+  // return result;
+}
 
 const PostDeployKeeping = (abi, bytecode) => {
   try {

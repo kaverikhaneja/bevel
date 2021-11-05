@@ -129,8 +129,8 @@ router.post("/", upload.array(), function(req, res) {
     misc.push(x)
   }
 
-  var result = await addContainer(ganacheServer, productContractAddress, newContainer, productABI, privateKey, privateFrom, privateFor);
-  console.log(result);
+  addContainer(ganacheServer, productContractAddress, newContainer, productABI, privateKey, privateFrom, privateFor);
+  // console.log(result);
 
   // productContract.methods
   //   .addContainer(
