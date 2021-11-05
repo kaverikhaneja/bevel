@@ -5,7 +5,6 @@ const fs = require('fs-extra'); // Importing for writing a file
 const contract = require('./compile'); //Importing the function to compile smart contract
 const minimist = require('minimist'); // Import the library for the arguments
 const Tx = require('ethereumjs-tx').Transaction;
-// var ethers = require('ethers');
 
 let args = minimist(process.argv.slice(2));
 const url = args['url'];  // url of RPC port of besu node
@@ -22,21 +21,9 @@ const numberOfIterations = args['numberOfIteration'] | 100;
 
 args['v'] && console.log(`Creating a web3 provider.......`);
 const web3quorum = new Web3Quorum(new Web3(`${url}`));
-// const jsonRpcProvider = new ethers.providers.JsonRpcProvider(`${url}`);
 
 var transactionHash = ""; // to store transaction hash to get the transaction receipt 
 var contractAddress = "";
-
-// var signer = jsonRpcProvider.getSigner();
-// console.log(signer);
-
-// const wallet = new ethers.Wallet( privateKey, jsonRpcProvider)
-// var addr = wallet.address
-// console.log("account address: " + addr);
-// var chainid = signer.getChainId();
-// console.log("chain id: " + chainid)
-// var accountsList = jsonRpcProvider.listAccounts();
-// console.log("account list: " + accountsList);
 
 const deploy = async () => {
   args['v'] && console.log(`Compiling the smartcontract.......`);
@@ -52,7 +39,7 @@ const deploy = async () => {
     restriction: `restricted`,
     gas: 427372,
     gasLimit: '0x1fffffffffffff',
-    chainId: 2018,
+    chainId: `${chainId}`,
     chain: "dev"
   };
 
@@ -77,12 +64,12 @@ const deploy = async () => {
   args['v'] && console.log(`writing the smartcontract binary and abi to build folder......`);
   PostDeployKeeping(smartContract.abi, smartContract.bytecode) // For writing the ABI and the smartContract bytecode in build 
   
-  let newContainer = {
-    name: "health"
-  };
-  //calling the addContainer function
-  var result = await addContainer(url, contractAddress, newContainer, smartContract.abi, privateKey, privateFor, privateFor);
-  console.log(result);
+  // let newContainer = {
+  //   name: "health"
+  // };
+  // //calling the addContainer function
+  // var result = await addContainer(url, contractAddress, newContainer, smartContract.abi, privateKey, privateFor, privateFor);
+  // console.log(result);
 
 };
 
@@ -97,30 +84,30 @@ const deploySmartContract = async (contractOptions) => {
 }
 
 
-const addContainer = async (url, contractAddress, value, abi, privateKey, privateFrom, privateFor)  => {
-  // const Web3 = require("web3");
-  // const Web3Quorum = require("web3js-quorum");
-  // const web3quorum = new Web3Quorum(new Web3(url));
-  const contract = new web3quorum.eth.Contract(abi, contractAddress);
-  // eslint-disable-next-line no-underscore-dangle
-  const functionAbi = contract._jsonInterface.find(e => {
-    return e.name === "addContainer";
-  });
-  const functionArgs = web3quorum.eth.abi                   //encode and decode parameters to ABI for function calls to the EVM
-    .encodeParameters(functionAbi.inputs, [value])
-    .slice(2);
-  const functionParams = {
-    to: productContractAddress,
-    data: functionAbi.signature + functionArgs,
-    privateKey: privateKey,
-    privateFrom: privateFrom,
-    privateFor: privateFor
-  };
-  const transactionHash = await web3quorum.priv.generateAndSendRawTransaction(functionParams);
-  console.log(`Transaction hash: ${transactionHash}`);
-  const result = await web3quorum.priv.waitForTransactionReceipt(transactionHash);
-  return result;
-}
+// const addContainer = async (url, contractAddress, value, abi, privateKey, privateFrom, privateFor)  => {
+//   // const Web3 = require("web3");
+//   // const Web3Quorum = require("web3js-quorum");
+//   // const web3quorum = new Web3Quorum(new Web3(url));
+//   const contract = new web3quorum.eth.Contract(abi, contractAddress);
+//   // eslint-disable-next-line no-underscore-dangle
+//   const functionAbi = contract._jsonInterface.find(e => {
+//     return e.name === "addContainer";
+//   });
+//   const functionArgs = web3quorum.eth.abi                   //encode and decode parameters to ABI for function calls to the EVM
+//     .encodeParameters(functionAbi.inputs, [value])
+//     .slice(2);
+//   const functionParams = {
+//     to: productContractAddress,
+//     data: functionAbi.signature + functionArgs,
+//     privateKey: privateKey,
+//     privateFrom: privateFrom,
+//     privateFor: privateFor
+//   };
+//   const transactionHash = await web3quorum.priv.generateAndSendRawTransaction(functionParams);
+//   console.log(`Transaction hash: ${transactionHash}`);
+//   const result = await web3quorum.priv.waitForTransactionReceipt(transactionHash);
+//   return result;
+// }
 
 const PostDeployKeeping = (abi, bytecode) => {
   try {
