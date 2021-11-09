@@ -25,11 +25,11 @@ var contractAddress = "";
 
 const deploy = async () => {
   args['v'] && console.log(`Compiling the smartcontract.......`);
-  const smartContract = await contract.GetByteCode(numberOfIterations, contractPath, contractEntryPoint, contractName); // Converting smart contract to byte code, optimizing the bytecode conversion for numer of Iterations
+  const smartContract = await contract.GetByteCode(numberOfIterations, contractPath, contractEntryPoint, contractName); // Converting smart contract to byte code, optimizing the bytecode conversion for numberOfIterations iterations
   args['v'] && console.log(`Smartcontract converted into bytecode and abi`);
   const contractOptions = {
     data: `0x${smartContract.bytecode}`, // contract binary
-    privateFrom: `${orionPublicKey}`,
+    privateFrom: `${tmPublicKey}`,
     privateFor: privateFor,
     privateKey: `${privateKey}`
   };
