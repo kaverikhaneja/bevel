@@ -144,7 +144,7 @@ spec:
           validateVaultResponse "secret (${vault_secret_key})" "${LOOKUP_SECRET_RESPONSE}" "LOOKUPSECRETRESPONSE"  
 
           tmpub=$(echo ${LOOKUP_SECRET_RESPONSE} | jq -r '.data.data["publicKey"]')
-          tmkey=$(echo ${LOOKUP_SECRET_RESPONSE} | jq -r '.data.data["privateKey"]' | base64 -d)
+          tmkey=$(echo ${LOOKUP_SECRET_RESPONSE} | jq -r '.data.data["privateKey"]')
           echo -n "${tmpub}" > ${OUTPUT_PATH}/tm.pub
           echo '{"data":{"bytes":"'"$tmkey"'"},"type":"unlocked"}' > ${OUTPUT_PATH}/tm.key 
           
