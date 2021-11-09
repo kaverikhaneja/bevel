@@ -46,7 +46,7 @@
 # This task gets the orion key from the vault
 - name: get orion_key from vault
   shell: |
-    vault kv get -field=key_pub {{ component_vault.secret_path | default('secretsv2') }}/{{ component_ns }}/crypto/{{ peer.name }}/orion
+    vault kv get -field=key_pub {{ component_vault.secret_path | default('secretsv2') }}/{{ component_ns }}/crypto/{{ peer.name }}/tm
   environment:
     VAULT_ADDR: "{{ component_vault.url }}"
     VAULT_TOKEN: "{{ component_vault.root_token }}"
@@ -54,7 +54,7 @@
 
 - name: get orion_key from vault for other nodes
   shell: |
-    vault kv get -field=key_pub {{ component_vault.secret_path | default('secretsv2') }}/{{item[1].org}}-bes/crypto/{{item[1].node}}/orion
+    vault kv get -field=key_pub {{ component_vault.secret_path | default('secretsv2') }}/{{item[1].org}}-bes/crypto/{{item[1].node}}/tm
   environment:
     VAULT_ADDR: "{{ component_vault.url }}"
     VAULT_TOKEN: "{{ component_vault.root_token }}"

@@ -29,16 +29,16 @@ const deploy = async () => {
   args['v'] && console.log(`Smartcontract converted into bytecode and abi`);
   const contractOptions = {
     data: `0x${smartContract.bytecode}`, // contract binary
-    privateFrom: `${tmPublicKey}`,
-    privateFor: privateFor,
-    privateKey: `${privateKey}`
+    privateFrom: `${tmPublicKey}`,   // transaction manager public key of sender
+    privateFor: privateFor,          // transaction manager public key(s) of receiver(s)
+    privateKey: `${privateKey}`      // private key of sender
   };
   args['v'] && console.log(`Created the contract options`);
   await deploySmartContract(contractOptions)
     .then(hash => {
       transactionHash = hash;
       args['v'] && console.log(`Transaction hash for the deployment is ${hash}`);
-      web3.priv.getTransactionReceipt(transactionHash, `${orionPublicKey}`)
+      web3quorum.priv.waitForTransactionReceipt(transactionHash)
         .then(data => {
           contractAddress = data.contractAddress
           console.log(contractAddress);
@@ -57,10 +57,8 @@ const deploy = async () => {
 }
 
 const deploySmartContract = async (contractOptions) => {
-  args['v'] && console.log(`trying to create a new account from private key`);
-  const newAccount = await web3.eth.accounts.privateKeyToAccount(`0x${privateKey}`) // Creating new ethereum account from the private key
   args['v'] && console.log(`Deploying the smartcontract......`);
-  return web3.eea.sendRawTransaction(contractOptions); // deploy smartcontract with contractoptions
+  return web3quorum.priv.generateAndSendRawTransaction(contractOptions); // deploy smartcontract with contractOptions
 }
 
 
