@@ -117,9 +117,9 @@ spec:
             jq -r 'if .errors then . else . end')
           validateVaultResponse "secret (${vault_secret_key})" "${LOOKUP_SECRET_RESPONSE}" "LOOKUPSECRETRESPONSE" 
           nodekey=$(echo ${LOOKUP_SECRET_RESPONSE} | jq -r '.data.data["privateKey"]') 
-          # echo '{"data":{"bytes":"'"$nodekey"'"},"type":"unlocked"}' > ${MOUNT_PATH}/nodekey 
+          echo '{"data":{"bytes":"'"$nodekey"'"},"type":"unlocked"}' > ${MOUNT_PATH}/nodekey 
 
-          echo "${nodekey}" > ${MOUNT_PATH}/nodekey
+          # echo "${nodekey}" > ${MOUNT_PATH}/nodekey
 
           vault_secret_key="${VAULT_SECRET_PREFIX}/{{ .Values.vault.tmdir }}" 
           echo "Getting 2 keys from $vault_secret_key" 
@@ -144,7 +144,7 @@ spec:
             tm_known_server=$(echo ${LOOKUP_SECRET_RESPONSE} | jq -r '.data.data["knownServer"]' | base64 -d) 
             keystore=$(echo ${LOOKUP_SECRET_RESPONSE} | jq -r '.data.data["keystore"]')  
             keystore_b64=$(echo ${keystore} | sed 's/ //g' )
-            echo $keystore_b64
+            # echo $keystore_b64
 
             keystore_password=$(echo ${LOOKUP_SECRET_RESPONSE} | jq -r '.data.data["password"]' | base64 -d)
 
