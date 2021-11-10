@@ -19,8 +19,9 @@ args['privateFor'].split(',').forEach(item => privateFor.push(item));
 const numberOfIterations = args['numberOfIteration'] | 100;
 
 args['v'] && console.log(`Creating a web3 provider.......`);
-const web3quorum = new Web3Quorum(new Web3(`${url}`)); // Creating a provider
-var transactionHash = "";  // to store transaction hash to get the transaction receipt 
+const web3quorum = new Web3Quorum(new Web3(`${url}`)); 
+
+var transactionHash = ""; // to store transaction hash to get the transaction receipt 
 var contractAddress = "";
 
 const deploy = async () => {
@@ -29,12 +30,13 @@ const deploy = async () => {
   args['v'] && console.log(`Smartcontract converted into bytecode and abi`);
   const contractOptions = {
     data: `0x${smartContract.bytecode}`, // contract binary
-    privateFrom: `${tmPublicKey}`,   // transaction manager public key of sender
+    privateFrom: `${orionPublicKey}`,   // transaction manager public key of sender
     privateFor: privateFor,          // transaction manager public key(s) of receiver(s)
     privateKey: `${privateKey}`      // private key of sender
   };
   args['v'] && console.log(`Created the contract options`);
-  await deploySmartContract(contractOptions)
+
+  await deploySmartContract(contractOptions, smartContract.abi, smartContract.bytecode)
     .then(hash => {
       transactionHash = hash;
       args['v'] && console.log(`Transaction hash for the deployment is ${hash}`);
@@ -53,12 +55,11 @@ const deploy = async () => {
 
   args['v'] && console.log(`writing the smartcontract binary and abi to build folder......`);
   PostDeployKeeping(smartContract.abi, smartContract.bytecode) // For writing the ABI and the smartContract bytecode in build 
-
-}
+};
 
 const deploySmartContract = async (contractOptions) => {
   args['v'] && console.log(`Deploying the smartcontract......`);
-  return web3quorum.priv.generateAndSendRawTransaction(contractOptions); // deploy smartcontract with contractOptions
+  return web3quorum.priv.generateAndSendRawTransaction(contractOptions); 
 }
 
 
