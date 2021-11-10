@@ -1,0 +1,29 @@
+apiVersion: helm.fluxcd.io/v1
+kind: HelmRelease
+metadata:
+  name: c-peer1-tessera-job
+  namespace: carrierkav-bes
+  annotations:
+    flux.weave.works/automated: "false"
+spec:
+  releaseName: c-peer1-tessera-job
+  chart:
+    path: platforms/hyperledger-besu/charts/tessera_key_mgmt
+    git: https://github.com/kaverikhaneja/blockchain-automation-framework.git
+    ref: private-tx-express-app
+  values:
+    metadata:
+      name: c-peer1-tessera-job
+      namespace: carrierkav-bes
+    peer:
+      name: c-peer1        
+    image:      
+      repository: quorumengineering/tessera:21.1.1
+      pullSecret: regcred
+    vault:
+      address: http://vault.internal.dev2.aws.blockchaincloudpoc-develop.com:20001
+      authpath: besucarrierkav
+      role: vault-role
+      keyprefix: carrierkav-bes/crypto
+      serviceaccountname: vault-auth
+      tmprefix: secretsv2/data/carrierkav-bes/crypto
