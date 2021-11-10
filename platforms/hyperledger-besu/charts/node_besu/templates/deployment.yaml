@@ -117,7 +117,7 @@ spec:
             jq -r 'if .errors then . else . end')
           validateVaultResponse "secret (${vault_secret_key})" "${LOOKUP_SECRET_RESPONSE}" "LOOKUPSECRETRESPONSE" 
           nodekey=$(echo ${LOOKUP_SECRET_RESPONSE} | jq -r '.data.data["key"]') 
-          # echo '{"data":{"bytes":"'"$nodekey"'"},"type":"unlocked"}' > ${MOUNT_PATH}/nodekey 
+          echo $nodekey
 
           echo "${nodekey}" > ${MOUNT_PATH}/nodekey
 
