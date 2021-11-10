@@ -126,7 +126,7 @@ spec:
             ${VAULT_ADDR}/v1/${vault_secret_key} | \
             jq -r 'if .errors then . else . end')
           validateVaultResponse "secret (${vault_secret_key})" "${LOOKUP_SECRET_RESPONSE}" "LOOKUPSECRETRESPONSE" 
-          tm_key_pub=$(echo ${LOOKUP_SECRET_RESPONSE} | jq -r '.data.data["publickey"]')    
+          tm_key_pub=$(echo ${LOOKUP_SECRET_RESPONSE} | jq -r '.data.data["publickey"]' | base64 -d)    
           echo "${tm_key_pub}" > ${MOUNT_PATH}/tm_key.pub
         
           if [ {{ $.Values.tm.tls }} == "true" ]
