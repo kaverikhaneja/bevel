@@ -140,7 +140,7 @@ spec:
             validateVaultResponse "secret (${vault_secret_key})" "${LOOKUP_SECRET_RESPONSE}" "LOOKUPSECRETRESPONSE" 
             
             tm_known_server=$(echo ${LOOKUP_SECRET_RESPONSE} | jq -r '.data.data["knownServer"]' | base64 -d) 
-            keystore=$(echo ${LOOKUP_SECRET_RESPONSE} | jq -r '.data.data["keystore"]' | sed 's/ //g' )  
+            keystore=$(echo ${LOOKUP_SECRET_RESPONSE} | jq -r '.data.data["keystore"]' | tr -d ' ' )  
 
             echo $keystore
             keystore_password=$(echo ${LOOKUP_SECRET_RESPONSE} | jq -r '.data.data["password"]' | base64 -d)
