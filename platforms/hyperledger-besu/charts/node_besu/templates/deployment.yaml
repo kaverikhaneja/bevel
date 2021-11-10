@@ -140,16 +140,14 @@ spec:
             validateVaultResponse "secret (${vault_secret_key})" "${LOOKUP_SECRET_RESPONSE}" "LOOKUPSECRETRESPONSE" 
             
             tm_known_server=$(echo ${LOOKUP_SECRET_RESPONSE} | jq -r '.data.data["knownServer"]' | base64 -d) 
-            keystore=$(echo ${LOOKUP_SECRET_RESPONSE} | jq -r '.data.data["keystore"]')  
-            keystore_b64=$(echo ${keystore} | sed 's/ //g' )
-            keystore_decode=$(echo ${keystore_b64} | base64 -d)
-            echo $keystore_decode
-
+            keystore=$(echo ${LOOKUP_SECRET_RESPONSE} | jq -r '.data.data["keystore"]' | sed 's/ //g')  
+            echo $keystore
+            # keystore_b64=$(echo ${keystore} | sed 's/ //g' )
             keystore_password=$(echo ${LOOKUP_SECRET_RESPONSE} | jq -r '.data.data["password"]' | base64 -d)
 
             echo "${tm_known_server}" > ${MOUNT_PATH}/known_server
-            echo "${keystore_decode}" > ${MOUNT_PATH}/keystore.pkcs12
-            # base64 -d ${MOUNT_PATH}/keystore > ${MOUNT_PATH}/keystore.pkcs12
+            echo "${keystore}" > ${MOUNT_PATH}/keystore
+            base64 -d ${MOUNT_PATH}/keystore > ${MOUNT_PATH}/keystore.pkcs12
             echo "${keystore_password}" > ${MOUNT_PATH}/keystore_password
           fi 
         volumeMounts:
