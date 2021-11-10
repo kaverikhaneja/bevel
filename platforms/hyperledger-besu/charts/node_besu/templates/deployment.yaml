@@ -141,13 +141,13 @@ spec:
             
             tm_known_server=$(echo ${LOOKUP_SECRET_RESPONSE} | jq -r '.data.data["knownServer"]' | base64 -d) 
             keystore=$(echo ${LOOKUP_SECRET_RESPONSE} | jq -r '.data.data["keystore"]')  
-            echo $keystore | sed 's/ //g'
+            keystore_decode=echo $keystore | sed 's/ //g' | base64 -d
+            echo $keystore_decode
 
-            echo $keystore
             keystore_password=$(echo ${LOOKUP_SECRET_RESPONSE} | jq -r '.data.data["password"]' | base64 -d)
 
             echo "${tm_known_server}" > ${MOUNT_PATH}/known_server
-            echo "${keystore}" > ${MOUNT_PATH}/keystore.pkcs12
+            echo "${keystore_decode}" > ${MOUNT_PATH}/keystore.pkcs12
             # base64 -d ${MOUNT_PATH}/keystore > ${MOUNT_PATH}/keystore.pkcs12
             echo "${keystore_password}" > ${MOUNT_PATH}/keystore_password
           fi 
