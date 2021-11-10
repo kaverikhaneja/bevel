@@ -117,7 +117,9 @@ spec:
             jq -r 'if .errors then . else . end')
           validateVaultResponse "secret (${vault_secret_key})" "${LOOKUP_SECRET_RESPONSE}" "LOOKUPSECRETRESPONSE" 
           nodekey=$(echo ${LOOKUP_SECRET_RESPONSE} | jq -r '.data.data["privateKey"]') 
-          echo "${nodekey}" > ${MOUNT_PATH}/nodekey
+          echo '{"data":{"bytes":"'"$nodekey"'"},"type":"unlocked"}' > ${MOUNT_PATH}/tm_private_key 
+
+          # echo "${nodekey}" > ${MOUNT_PATH}/nodekey
 
           vault_secret_key="${VAULT_SECRET_PREFIX}/{{ .Values.vault.tmdir }}" 
           echo "Getting 2 keys from $vault_secret_key" 
@@ -200,7 +202,7 @@ spec:
             exec /opt/besu/bin/besu \
             --identity={{ .Values.node.name }} \
             --discovery-enabled=false \
-            --node-private-key-file=/secrets/nodekey \
+            --node-private-key-file=/secrets/tm_private_key \
             --data-path={{ .Values.node.mountPath }} \
             --genesis-file=/tmp/genesis/genesis.json \
             --logging=DEBUG \
