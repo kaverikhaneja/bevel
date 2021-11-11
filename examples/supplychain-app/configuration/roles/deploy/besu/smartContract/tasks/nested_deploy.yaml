@@ -90,7 +90,7 @@
 - name: Run deploy.js for "{{ organization_data.name | lower }}"
   shell: |
     cd "{{ playbook_dir }}/../../../{{ smart_contract.deployjs_path }}"
-    node deploy.js -v --url "{{ URL }}" --path "{{ contract_path }}" --entryPoint "{{ entrypoint }}" --contractName "{{ contract }}" --chainId 2018 --tesseraKey "{{ tessera_key.stdout }}" --privateKey "{{ nodekey.stdout | regex_replace('0x', '') }}" --privateFor '{{ privateFor }}' --numberOfIteration "{{ numberOfIteration }}"
+    node deploy.js -v --url "{{ URL }}" --path "{{ contract_path }}" --entryPoint "{{ entrypoint }}" --contractName "{{ contract }}" --chainId 2018 --orionKey "{{ tessera_key.stdout }}" --privateKey "{{ nodekey.stdout | regex_replace('0x', '') }}" --privateFor '{{ privateFor }}' --numberOfIteration "{{ numberOfIteration }}"
   vars:
     URL: "{{ peer.geth_url }}"
     contract_path: "{{ smart_contract.contract_path }}"
@@ -101,7 +101,7 @@
   register: address
   retries: "{{ network.env.retry_count}}"
   delay: 5
-  until: address['stdout_lines'] is defined and address['stdout_lines'][0] != "Error"
+  until: address['stdout_lines'][14] is defined and address['stdout_lines'][0] != "Error"
 
 - debug:
     msg: 
@@ -112,10 +112,10 @@
 
 # Set the variables
 - set_fact:
-    contract_address: "{{ address['stdout_lines'][1] | trim }}"
+    contract_address: "{{ address['stdout_lines'][14] | regex_replace('contractAddress: ') | regex_replace(',') | replace(\"'\",'') | trim }}"
     contract_name: "{{ smart_contract.name }}"
     check: address['stdout_lines'][0]
-  when: address['stdout_lines'][1] is defined and address['stdout_lines'][0] != "Error"
+  when: address['stdout_lines'][14] is defined and address['stdout_lines'][0] != "Error"
 
 - name:  Checking contract_address
   debug: 
