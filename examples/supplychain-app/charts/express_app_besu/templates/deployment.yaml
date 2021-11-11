@@ -115,7 +115,7 @@ spec:
               validateVaultResponse "secret (${vault_secret_key})" "${LOOKUP_SECRET_RESPONSE}" "LOOKUPSECRETRESPONSE"
               product_contract_address=$(echo ${LOOKUP_SECRET_RESPONSE} | jq -r '.data.data["address"]')
 
-              echo "Contract address: ${product_contract_address}"
+              # echo "Contract address: ${product_contract_address}"
               
               echo "Getting the node address from vault: ${NODE_ADDRESS_SECRET}"
               LOOKUP_SECRET_RESPONSE=$(curl -sS \
@@ -125,7 +125,7 @@ spec:
               validateVaultResponse "secret (${NODE_ADDRESS_SECRET})" "${LOOKUP_SECRET_RESPONSE}" "LOOKUPSECRETRESPONSE"
               node_address=$(echo ${LOOKUP_SECRET_RESPONSE} | jq -r '.data.data["nodeAddress"]')
 
-              echo "node address: ${node_address}"
+              # echo "node address: ${node_address}"
   
               OUTPUT_PATH="${MOUNT_PATH}/keys"
               mkdir -p ${OUTPUT_PATH}
