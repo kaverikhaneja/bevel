@@ -100,8 +100,8 @@
     numberOfIteration: "{{ smart_contract.iterations }}"
   register: address
   retries: "{{ network.env.retry_count}}"
-  delay: 10
-  until: address['stdout_lines'][1] is defined and address['stdout_lines'][0] != "Error"
+  delay: 5
+  until: address['stdout_lines'] is defined and address['stdout_lines'][0] != "Error"
 
 - debug:
     msg: 
