@@ -1,4 +1,9 @@
-const path = require("path");
+/////////////////////////////////////////////////////////////////////////////////////////////////
+//  Copyright Accenture. All Rights Reserved.                                                  //
+//                                                                                             //
+//  SPDX-License-Identifier: Apache-2.0                                                        //
+/////////////////////////////////////////////////////////////////////////////////////////////////
+
 const Web3 = require('web3'); // Importing web3.js library
 const Web3Quorum = require('web3js-quorum');
 const fs = require('fs-extra'); // Importing for writing a file
@@ -10,7 +15,6 @@ const url = args['url'];  // url of RPC port of besu node
 const contractPath = args['path']; // path to the contract directory
 const contractEntryPoint = args['entryPoint']; // Smart contract entrypoint eg Main.sol
 const contractName = args['contractName']; // Smart Contract Class Nameconst initArguments = process.env.INITARGUMENTS | " ";
-const chainId = args['chainId'];
 const orionPublicKey = args['orionKey'];
 const privateKey = args['privateKey'];
 const privateFor = [];
@@ -30,9 +34,9 @@ const deploy = async () => {
   args['v'] && console.log(`Smartcontract converted into bytecode and abi`);
   const contractOptions = {
     data: `0x${smartContract.bytecode}`, // contract binary
-    privateFrom: `${orionPublicKey}`,   // transaction manager public key of sender
-    privateFor: privateFor,          // transaction manager public key(s) of receiver(s)
-    privateKey: `${privateKey}`,      // private key of sender
+    privateFrom: `${orionPublicKey}`,    // transaction manager public key of sender
+    privateFor: privateFor,              // transaction manager public key(s) of receiver(s)
+    privateKey: `${privateKey}`,          // private key of sender
     gas: 427372
   };
   args['v'] && console.log(`Created the contract options`);
@@ -41,11 +45,11 @@ const deploy = async () => {
     .then(hash => {
       transactionHash = hash;
       args['v'] && console.log(`Transaction hash for the deployment is ${hash}`);
-      web3quorum.priv.waitForTransactionReceipt(transactionHash, 500, 1000)
-      // web3quorum.priv.getTransactionReceipt(transactionHash)
+      web3quorum.eth.transactionPollingTimeout = "1200";    // defines the number of seconds Web3 will wait for a receipt which confirms that a transaction was mined by the network.
+      web3quorum.priv.waitForTransactionReceipt(transactionHash)
         .then(data => {
-          // contractAddress = data.contractAddress
-          // console.log(contractAddress);
+          contractAddress = data.contractAddress
+          console.log(contractAddress);
           args['v'] && console.log(`Transaction receipt:`); //comment for large smartcontracts
           args['v'] && console.log(data); //comment for large smartcontracts
         });
@@ -61,10 +65,9 @@ const deploy = async () => {
 
 const deploySmartContract = async (contractOptions) => {
   args['v'] && console.log(`Deploying the smartcontract......`);
-  web3quorum.eth.transactionPollingTimeout = 1000;      // the number of seconds Web3 will wait for a receipt which confirms that a transaction was mined by the network
+  web3quorum.eth.isMining().then(console.log);      // Checks whether the node is mining or not. returns boolean:true if the node is mining, otherwise false.
   return web3quorum.priv.generateAndSendRawTransaction(contractOptions); 
 }
-
 
 const PostDeployKeeping = (abi, bytecode) => {
   try {
