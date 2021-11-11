@@ -90,7 +90,7 @@
 - name: Run deploy.js for "{{ organization_data.name | lower }}"
   shell: |
     cd "{{ playbook_dir }}/../../../{{ smart_contract.deployjs_path }}"
-    node deploy.js --url "{{ URL }}" --path "{{ contract_path }}" --entryPoint "{{ entrypoint }}" --contractName "{{ contract }}" --chainId 2018 --tesseraKey "{{ tessera_key.stdout }}" --privateKey "{{ nodekey.stdout | regex_replace('0x', '') }}" --privateFor '{{ privateFor }}' --numberOfIteration "{{ numberOfIteration }}"
+    node deploy.js -v --url "{{ URL }}" --path "{{ contract_path }}" --entryPoint "{{ entrypoint }}" --contractName "{{ contract }}" --chainId 2018 --tesseraKey "{{ tessera_key.stdout }}" --privateKey "{{ nodekey.stdout | regex_replace('0x', '') }}" --privateFor '{{ privateFor }}' --numberOfIteration "{{ numberOfIteration }}"
   vars:
     URL: "{{ peer.geth_url }}"
     contract_path: "{{ smart_contract.contract_path }}"
