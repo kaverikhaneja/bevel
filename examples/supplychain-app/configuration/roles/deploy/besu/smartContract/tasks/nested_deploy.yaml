@@ -34,7 +34,7 @@
     path: "{{ playbook_dir }}/../../../{{ smart_contract.deployjs_path }}/build"
     state: directory
 
-# This task gets the nodekey from the vault
+# This task gets the node private key from the vault
 - name: get nodekey from vault
   shell: |
     vault kv get -field=key {{ component_vault.secret_path | default('secretsv2') }}/{{ component_ns }}/crypto/{{ peer.name }}/data
@@ -43,42 +43,42 @@
     VAULT_TOKEN: "{{ component_vault.root_token }}"
   register: nodekey
 
-# This task gets the orion key from the vault
-- name: get orion_key from vault
+# This task gets the transaction manager public key from the vault
+- name: get tm_key from vault
   shell: |
     vault kv get -field=key_pub {{ component_vault.secret_path | default('secretsv2') }}/{{ component_ns }}/crypto/{{ peer.name }}/tm
   environment:
     VAULT_ADDR: "{{ component_vault.url }}"
     VAULT_TOKEN: "{{ component_vault.root_token }}"
-  register: orion_key
+  register: tessera_key
 
-- name: get orion_key from vault for other nodes
+- name: get tessera_key from vault for other nodes
   shell: |
     vault kv get -field=key_pub {{ component_vault.secret_path | default('secretsv2') }}/{{item[1].org}}-bes/crypto/{{item[1].node}}/tm
   environment:
     VAULT_ADDR: "{{ component_vault.url }}"
     VAULT_TOKEN: "{{ component_vault.root_token }}"
-  register: other_orion_list
+  register: other_tessera_list
   with_indexed_items: "{{ node_list }}"
   when: 
   - smart_contract.private_for == ''
   - item[1].org != organization_data.name
 
 - debug:
-    var: other_orion_list
+    var: other_tessera_list
 - name: Set node_list to empty
   set_fact:
     local_private_for: ''
 
 - name: Get node data
   set_fact:
-    local_private_for={{ local_private_for |default('') ~ other_orion.stdout ~ ',' }}    
-  loop: "{{ other_orion_list.results }}"
+    local_private_for={{ local_private_for |default('') ~ other_tessera.stdout ~ ',' }}    
+  loop: "{{ other_tessera_list.results }}"
   loop_control:
-    loop_var: other_orion 
+    loop_var: other_tessera 
   when: 
   - smart_contract.private_for == ''
-  - other_orion.changed 
+  - other_tessera.changed 
 
 - name: Set fact
   set_fact:
@@ -90,7 +90,7 @@
 - name: Run deploy.js for "{{ organization_data.name | lower }}"
   shell: |
     cd "{{ playbook_dir }}/../../../{{ smart_contract.deployjs_path }}"
-    node deploy.js --url "{{ URL }}" --path "{{ contract_path }}" --entryPoint "{{ entrypoint }}" --contractName "{{ contract }}" --chainId 2018 --orionKey "{{ orion_key.stdout }}" --privateKey "{{ nodekey.stdout | regex_replace('0x', '') }}" --privateFor '{{ privateFor }}' --numberOfIteration "{{ numberOfIteration }}"
+    node deploy.js --url "{{ URL }}" --path "{{ contract_path }}" --entryPoint "{{ entrypoint }}" --contractName "{{ contract }}" --chainId 2018 --tesseraKey "{{ tessera_key.stdout }}" --privateKey "{{ nodekey.stdout | regex_replace('0x', '') }}" --privateFor '{{ privateFor }}' --numberOfIteration "{{ numberOfIteration }}"
   vars:
     URL: "{{ peer.geth_url }}"
     contract_path: "{{ smart_contract.contract_path }}"
@@ -116,6 +116,10 @@
     contract_name: "{{ smart_contract.name }}"
     check: address['stdout_lines'][0]
   when: address['stdout_lines'][1] is defined and address['stdout_lines'][0] != "Error"
+
+- name:  Checking contract_address
+  debug: 
+    msg: "{{contract_address}}"
 
 ############################################################################################
 # Fail the playbook if check is not defined
