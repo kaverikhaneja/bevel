@@ -107,7 +107,7 @@ spec:
   
               vault_secret_key="${VAULT_SECRET_PREFIX}/{{ .Values.vault.contractName }}"
 
-              echo "Getting the contract address from $vault_secret_key"          
+              echo "Getting the contract address from vault: $vault_secret_key"          
               LOOKUP_SECRET_RESPONSE=$(curl -sS \
                 --header "X-Vault-Token:${VAULT_CLIENT_TOKEN}" \
                 ${VAULT_ADDR}/v1/${vault_secret_key} | \
@@ -115,7 +115,7 @@ spec:
               validateVaultResponse "secret (${vault_secret_key})" "${LOOKUP_SECRET_RESPONSE}" "LOOKUPSECRETRESPONSE"
               product_contract_address=$(echo ${LOOKUP_SECRET_RESPONSE} | jq -r '.data.data["address"]')
 
-              # echo "Contract address: ${product_contract_address}"
+              echo "Contract address: ${product_contract_address}"
               
               echo "Getting the node address from vault: ${NODE_ADDRESS_SECRET}"
               LOOKUP_SECRET_RESPONSE=$(curl -sS \
