@@ -108,7 +108,7 @@
       - "{{ address }}"
       - "{{ address['cmd'] }}"
       - "{{ address['stdout_lines'] }}"
-    verbosity: 2
+    # verbosity: 2
 
 # Set the variables
 - set_fact:
