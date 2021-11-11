@@ -8,7 +8,7 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 # This one is just a demo file, the file to install the helm chart will be created through
-# ANSIBLE with the values.tpl file that is in the same folder that this file. 
+# ANSIBLE with the values.tpl file that is in the helm_component/templates folder. 
 
 # This will be the name of the node to create
 nodeName:
@@ -22,24 +22,36 @@ deployment:
     #   annotations:
     #     key: "value"
     annotations: {}
+
+###################################################################################
+#                          HASHICORP VAULT CONFIGURATION                          #
+###################################################################################
 vault:
     #Provide the Vault Address from where secrets will be read
     #Eg. address: http://vault.internal.demo.aws.blockchaincloudpoc.com:9000
     address: 
+
     #Provide the Vault secret path from where secrets will be read
     #Eg. secretprefix: secretsv2/org1/smartContracts/ 
     secretprefix: 
+
+    #vault path to node's data
+    node_address_secret:
+
     #Provide the serviceaccount which is verified with Vault
     #Eg. serviceaccountname: vault-auth
     serviceaccountname: 
-    #Provide the key name from where quorum secrets will be read
+
+    #Provide the key name from where besu secrets will be read
     #Eg. keyname: General
-    keyname: 
+    contractName: 
+
     #Provide the service role which is verified with Vault
     #Eg. role: vault-role
     role: 
+
     #Provide the Vault auth-path which is created for the namespace
-    #Eg. authpath: quorumorg1
+    #Eg. authpath: besuorg1
     authpath:
 images:
     alpineutils: index.docker.io/hyperledgerlabs/alpine-utils:1.0
